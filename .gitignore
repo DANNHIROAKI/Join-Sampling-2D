@@ -9,7 +9,13 @@
 build/
 cmake-build-*/
 **/build/
+
+# Generic out directories (build / temp), but keep results/ outputs below
 out/
+
+# Keep experiment outputs even if they live in "out/" under results/
+!results/**/out/
+!results/**/out/**
 
 # CMake
 CMakeFiles/

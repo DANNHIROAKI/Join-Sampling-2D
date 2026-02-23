@@ -128,6 +128,55 @@ find_exe() {
   echo "${p}"
 }
 
+cmake_cache_internal_value() {
+  local cache="$1"
+  local key="$2"
+  [[ -f "$cache" ]] || return 1
+  local line
+  line="$(grep -E "^${key}:INTERNAL=" "$cache" | head -n 1 || true)"
+  [[ -n "$line" ]] || return 1
+  echo "${line#*=}"
+}
+
+ensure_cmake_configured() {
+  local cache="${BUILD_DIR}/CMakeCache.txt"
+
+  if [[ ! -f "$cache" ]]; then
+    log "Configuring CMake..."
+    cmake -S "$ROOT" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+    return 0
+  fi
+
+  local cache_home=""
+  local cache_dir=""
+  cache_home="$(cmake_cache_internal_value "$cache" "CMAKE_HOME_DIRECTORY" || true)"
+  cache_dir="$(cmake_cache_internal_value "$cache" "CMAKE_CACHEFILE_DIR" || true)"
+
+  # If repository path changed (e.g., directory renamed/moved), old absolute
+  # paths in CMakeCache can break cmake --build. Recreate this build dir once.
+  if [[ -n "$cache_home" && "$cache_home" != "$ROOT" ]]; then
+    warn "Detected stale CMake cache source path:"
+    warn "  cache: $cache_home"
+    warn "  root : $ROOT"
+    warn "Recreating build dir: $BUILD_DIR"
+    rm -rf "$BUILD_DIR"
+    log "Configuring CMake..."
+    cmake -S "$ROOT" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+    return 0
+  fi
+
+  if [[ -n "$cache_dir" && "$cache_dir" != "$BUILD_DIR" ]]; then
+    warn "Detected stale CMake cache build path:"
+    warn "  cache: $cache_dir"
+    warn "  build: $BUILD_DIR"
+    warn "Recreating build dir: $BUILD_DIR"
+    rm -rf "$BUILD_DIR"
+    log "Configuring CMake..."
+    cmake -S "$ROOT" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+    return 0
+  fi
+}
+
 sanitize_token() {
   # Make a token safe for filenames.
   # - replace '.' with 'p' (e.g., 0.1 -> 0p1)
@@ -297,10 +346,7 @@ if [[ "$CLEAN_BUILD" == "1" ]]; then
   rm -rf "$BUILD_DIR"
 fi
 
-if [[ ! -f "${BUILD_DIR}/CMakeCache.txt" ]]; then
-  log "Configuring CMake..."
-  cmake -S "$ROOT" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-fi
+ensure_cmake_configured
 
 log "Building... (JOBS=$JOBS)"
 cmake --build "$BUILD_DIR" -j "$JOBS"

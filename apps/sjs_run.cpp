@@ -9,7 +9,7 @@
 // This app is intended to be the basic building block for larger sweeps.
 //
 // Examples:
-//   ./sjs_run --dataset_source=synthetic --gen=stripe --dataset=demo
+//   ./sjs_run --dataset_source=synthetic --gen=alacarte_rectgen --dataset=demo
 //             --n_r=100000 --n_s=100000 --alpha=1e-6 --gen_seed=1
 //             --method=ours --variant=sampling --t=100000 --seed=1 --repeats=3
 //             --out_dir=out/demo
@@ -315,11 +315,11 @@ inline void PrintUsage() {
       << "  --dim=2\n"
       << "  --path_r=<file> --path_s=<file>    (for binary/csv)\n"
       << "\nSynthetic flags:\n"
-      << "  --gen=<stripe|uniform|clustered|hetero_sizes>\n"
+      << "  --gen=<alacarte_rectgen|alacarte-rectgen|rectgen|alacarte>\n"
       << "  --n_r=<N> --n_s=<N>\n"
       << "  --alpha=<float>\n"
       << "  --gen_seed=<seed>\n"
-      << "  plus generator-specific params, e.g. --gap_factor=0.1 --core_lo=0.45 ...\n"
+      << "  plus generator-specific params, e.g. --rectgen_script=... --audit_pairs=2000000\n"
       << "\nBaselines supported in this build (Dim=2):\n"
       << sjs::baselines::BaselineHelp2D()
       << "\n";

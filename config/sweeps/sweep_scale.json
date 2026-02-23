@@ -2,24 +2,15 @@
   "base": {
     "dataset": {
       "source": "synthetic",
-      "name": "stripe_scale",
+      "name": "rectgen_scale",
       "dim": 2,
       "synthetic": {
-        "generator": "stripe_ctrl_alpha",
+        "generator": "alacarte_rectgen",
         "n_r": 50000,
         "n_s": 50000,
         "alpha": 1.0,
         "seed": 1,
-        "params": {
-          "control_axis": 1,
-          "core_lo": 0.45,
-          "core_hi": 0.55,
-          "gap_factor": 0.1,
-          "delta_factor": 0.25,
-          "shuffle_strips": true,
-          "shuffle_r": false,
-          "swap_sides": false
-        }
+        "params": {}
       }
     },
     "run": {

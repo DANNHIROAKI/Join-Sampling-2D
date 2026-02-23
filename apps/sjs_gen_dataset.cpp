@@ -8,7 +8,7 @@
 //   - CSV (for debugging/visualization)
 //
 // Examples:
-//   ./sjs_gen_dataset --dataset_source=synthetic --gen=stripe --dataset=demo
+//   ./sjs_gen_dataset --dataset_source=synthetic --gen=alacarte_rectgen --dataset=demo
 //             --n_r=100000 --n_s=100000 --alpha=1e-6 --gen_seed=1
 //             --out_dir=data/demo --write_csv=1
 //
@@ -85,11 +85,12 @@ inline void PrintUsage() {
       << "sjs_gen_dataset: synthetic dataset generator\n\n"
       << "Required:\n"
       << "  --dataset_source=synthetic\n"
-      << "  --gen=<stripe|uniform|clustered|hetero_sizes>\n"
+      << "  --gen=<alacarte_rectgen|alacarte-rectgen|rectgen|alacarte>\n"
       << "  --dataset=<name>\n"
       << "  --n_r=<N> --n_s=<N>\n"
       << "  --alpha=<float>\n"
       << "  --gen_seed=<seed>\n"
+      << "  [optional generator params: --rectgen_script=... --audit_pairs=... --audit_seed=...]\n"
       << "\nOutput:\n"
       << "  --out_dir=<dir>\n"
       << "  --out_r=<path> --out_s=<path>            (override binary outputs)\n"

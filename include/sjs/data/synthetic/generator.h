@@ -49,7 +49,7 @@ struct DatasetSpec {
   u64 n_s = 100000;
 
   // A high-level knob; exact semantics depend on the generator.
-  // For stripe_ctrl_alpha, this is alpha where k = round(alpha * (n_r + n_s)).
+  // For alacarte_rectgen, this maps to alpha_out = |J(R,S)| / (n_r + n_s).
   double alpha = 1e-6;
 
   // RNG seed for generation (separate from sampling seed).
@@ -62,7 +62,7 @@ struct DatasetSpec {
   double domain_hi = 1.0;
 
   // Generator-specific parameters (string -> string).
-  // Example: {"core_lo":"0.45", "core_hi":"0.55", "gap_factor":"0.1"}.
+  // Example: {"rectgen_script":"tools/alacarte_rectgen_generate.py", "audit_pairs":"2000000"}.
   std::unordered_map<std::string, std::string> params;
 };
 
@@ -282,6 +282,19 @@ inline void ShuffleInPlace(std::vector<T>* v, Rng* rng) {
   }
 }
 
+inline bool CheckIdFits(u64 n, std::string* err, std::string_view who) {
+  if (n > static_cast<u64>(std::numeric_limits<Id>::max())) {
+    if (err) {
+      std::ostringstream oss;
+      oss << std::string(who) << ": n=" << n << " exceeds Id max="
+          << static_cast<u64>(std::numeric_limits<Id>::max());
+      *err = oss.str();
+    }
+    return false;
+  }
+  return true;
+}
+
 }  // namespace detail
 
 // --------------------------
@@ -332,40 +345,23 @@ inline bool GenerateDataset(std::string_view generator_name,
 // --------------------------
 //
 // To keep the experiment code simple, we provide a header-only factory that
-// knows about the built-in generators listed in this folder.
+// knows about the built-in generator(s) listed in this folder.
 //
 // If you want a leaner build, move this Create() implementation into a .cc file
 // and only include the generators you need.
 
-#include "sjs/data/synthetic/stripe_ctrl_alpha.h"
-#include "sjs/data/synthetic/uniform.h"
-#include "sjs/data/synthetic/clustered.h"
-#include "sjs/data/synthetic/hetero_sizes.h"
+#include "sjs/data/synthetic/alacarte_rectgen.h"
 
 namespace sjs {
 namespace synthetic {
 
 template <int Dim, class T>
 inline std::unique_ptr<ISyntheticGenerator<Dim, T>> Create(std::string_view generator_name) {
-  // Accept some short aliases for convenience.
-  if (detail::EqualsIgnoreCase(generator_name, "stripe_ctrl_alpha") ||
-      detail::EqualsIgnoreCase(generator_name, "stripe") ||
-      detail::EqualsIgnoreCase(generator_name, "scirg")) {
-    return std::make_unique<StripeCtrlAlphaGenerator<Dim, T>>();
-  }
-  if (detail::EqualsIgnoreCase(generator_name, "uniform") ||
-      detail::EqualsIgnoreCase(generator_name, "uni")) {
-    return std::make_unique<UniformGenerator<Dim, T>>();
-  }
-  if (detail::EqualsIgnoreCase(generator_name, "clustered") ||
-      detail::EqualsIgnoreCase(generator_name, "hotspot") ||
-      detail::EqualsIgnoreCase(generator_name, "clusters")) {
-    return std::make_unique<ClusteredGenerator<Dim, T>>();
-  }
-  if (detail::EqualsIgnoreCase(generator_name, "hetero_sizes") ||
-      detail::EqualsIgnoreCase(generator_name, "hetero") ||
-      detail::EqualsIgnoreCase(generator_name, "mix_sizes")) {
-    return std::make_unique<HeteroSizesGenerator<Dim, T>>();
+  if (detail::EqualsIgnoreCase(generator_name, "alacarte_rectgen") ||
+      detail::EqualsIgnoreCase(generator_name, "alacarte-rectgen") ||
+      detail::EqualsIgnoreCase(generator_name, "rectgen") ||
+      detail::EqualsIgnoreCase(generator_name, "alacarte")) {
+    return std::make_unique<AlacarteRectGenGenerator<Dim, T>>();
   }
   return nullptr;
 }

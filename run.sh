@@ -23,8 +23,7 @@
 #
 # Notes:
 #   - This repo build is Dim=2 only.
-#   - The synthetic generator defaults to `stripe` (alias of stripe_ctrl_alpha).
-#     If your fork has `alacarte-rectgen`, set GEN=alacarte-rectgen.
+#   - Synthetic data generation uses alacarte-rectgen only.
 #
 # Usage:
 #   chmod +x run.sh
@@ -38,7 +37,10 @@
 #   REPEATS=3                  # per-task repeats inside sjs_run
 #   SEED=1                     # base seed for sampling (rep adds +rep)
 #   GEN_SEED=1                 # dataset generation seed
-#   GEN=stripe                 # dataset generator name
+#   GEN=alacarte_rectgen       # dataset generator name (aliases supported)
+#   RECTGEN_SCRIPT=tools/alacarte_rectgen_generate.py
+#   AUDIT_PAIRS=2000000
+#   AUDIT_SEED=1
 #
 #   # Framework knobs (Chapter 6.4.3):
 #   BUDGET_B=10000000          # B (maps to --j_star)
@@ -230,7 +232,10 @@ THREADS="${THREADS:-1}"
 REPEATS="${REPEATS:-3}"
 SEED="${SEED:-1}"
 GEN_SEED="${GEN_SEED:-1}"
-GEN="${GEN:-stripe}"
+GEN="${GEN:-alacarte_rectgen}"
+RECTGEN_SCRIPT="${RECTGEN_SCRIPT:-$ROOT/tools/alacarte_rectgen_generate.py}"
+AUDIT_PAIRS="${AUDIT_PAIRS:-2000000}"
+AUDIT_SEED="${AUDIT_SEED:-$GEN_SEED}"
 
 BUDGET_B="${BUDGET_B:-10000000}"
 W_SMALL="${W_SMALL:-1024}"
@@ -373,8 +378,6 @@ run_one_task() {
   local ds_name
   ds_name="d2_${GEN}_n${N}_a$(sanitize_token "$alpha")_gs${GEN_SEED}"
 
-  # Stripe generator defaults (safe even if GEN is different; ignored if unknown).
-  # control_axis=1 matches the d=2 setting in the thesis text (scan dim fixed to 1).
   local -a cmd=(
     "$SJS_RUN"
     "--dataset_source=synthetic"
@@ -398,14 +401,9 @@ run_one_task() {
     "--results_file=$csv_file"
     "--log_level=info"
     "--log_timestamp=1"
-    "--control_axis=1"
-    "--core_lo=0.45"
-    "--core_hi=0.55"
-    "--gap_factor=0.1"
-    "--delta_factor=0.25"
-    "--shuffle_strips=true"
-    "--shuffle_r=false"
-    "--swap_sides=false"
+    "--rectgen_script=$RECTGEN_SCRIPT"
+    "--audit_pairs=$AUDIT_PAIRS"
+    "--audit_seed=$AUDIT_SEED"
     "--w_small=$W_SMALL"
   )
 
@@ -677,12 +675,15 @@ fi
   echo "# EXP-2 synthetic (Dim=2) runner output"
   echo "timestamp=$(date -Is)"
   echo "build_type=$BUILD_TYPE"
-echo "clean_temp=$CLEAN_TEMP"
+  echo "clean_temp=$CLEAN_TEMP"
   echo "threads=$THREADS"
   echo "repeats=$REPEATS"
   echo "seed=$SEED"
   echo "gen=$GEN"
   echo "gen_seed=$GEN_SEED"
+  echo "rectgen_script=$RECTGEN_SCRIPT"
+  echo "audit_pairs=$AUDIT_PAIRS"
+  echo "audit_seed=$AUDIT_SEED"
   echo "budget_B(j_star)=$BUDGET_B"
   echo "w_small=$W_SMALL"
   echo "enum_cap=$ENUM_CAP"

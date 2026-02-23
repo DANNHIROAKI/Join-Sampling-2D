@@ -23,12 +23,12 @@
 //       "dim": 2,
 //       "path_r": "", "path_s": "",
 //       "synthetic": {
-//         "generator": "stripe",        // stripe|uniform|clustered|hetero_sizes
+//         "generator": "alacarte_rectgen", // alacarte_rectgen|alacarte-rectgen|rectgen|alacarte
 //         "n_r": 200000,
 //         "n_s": 200000,
 //         "alpha": 1e-6,
 //         "seed": 1,                    // gen_seed
-//         "params": { "gap_factor": 0.1 }
+//         "params": { "audit_pairs": 2000000 }
 //       }
 //     },
 //     "run": {

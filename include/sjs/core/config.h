@@ -229,15 +229,15 @@ inline void StoreExtras(const std::unordered_map<std::string, std::string>& all_
 // Dataset config
 // --------------------------
 struct SyntheticConfig {
-  // Generator name (e.g., "stripe_ctrl_alpha", "uniform", "clustered"...)
-  std::string generator = "stripe_ctrl_alpha";
+  // Generator name (this repo build supports alacarte_rectgen aliases only).
+  std::string generator = "alacarte_rectgen";
 
   // Sizes for R and S
   u64 n_r = 100000;
   u64 n_s = 100000;
 
   // A high-level knob for density; exact semantics depend on generator.
-  // For your stripe generator this maps naturally to alpha_out.
+  // For alacarte_rectgen this maps to alpha_out.
   double alpha = 1e-6;
 
   // Generator seed (separate from sampling seed)

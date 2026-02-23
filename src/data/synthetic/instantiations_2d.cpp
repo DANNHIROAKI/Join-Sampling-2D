@@ -20,10 +20,7 @@
 namespace sjs {
 namespace synthetic {
 
-template class StripeCtrlAlphaGenerator<2, Scalar>;
-template class UniformGenerator<2, Scalar>;
-template class ClusteredGenerator<2, Scalar>;
-template class HeteroSizesGenerator<2, Scalar>;
+template class AlacarteRectGenGenerator<2, Scalar>;
 
 }  // namespace synthetic
 }  // namespace sjs

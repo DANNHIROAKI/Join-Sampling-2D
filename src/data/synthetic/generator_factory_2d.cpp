@@ -52,26 +52,22 @@ inline bool EqualsIgnoreCase(std::string_view a, std::string_view b) {
 
 // A lightweight registry row.
 struct GeneratorSpec2D {
-  std::string_view name;  // canonical name, e.g., "stripe_ctrl_alpha"
+  std::string_view name;  // canonical name, e.g., "alacarte_rectgen"
   std::string_view desc;  // short description
 };
 
 Span<const GeneratorSpec2D> GeneratorRegistry2D() noexcept {
   static const GeneratorSpec2D kReg[] = {
-      {"stripe_ctrl_alpha", "Stripe-controlled alpha generator (exact k via degree sequence)"},
-      {"uniform", "Uniform random rectangles"},
-      {"clustered", "Clustered/hotspot rectangles"},
-      {"hetero_sizes", "Heterogeneous sizes (big+small mixture)"},
+      {"alacarte_rectgen", "Python-backed alacarte-rectgen generator"},
   };
   return Span<const GeneratorSpec2D>(kReg, sizeof(kReg) / sizeof(kReg[0]));
 }
 
 bool IsGeneratorSupported2D(std::string_view name) noexcept {
-  const auto reg = GeneratorRegistry2D();
-  for (usize i = 0; i < reg.size(); ++i) {
-    if (EqualsIgnoreCase(name, reg[i].name)) return true;
-  }
-  return false;
+  return EqualsIgnoreCase(name, "alacarte_rectgen") ||
+         EqualsIgnoreCase(name, "alacarte-rectgen") ||
+         EqualsIgnoreCase(name, "rectgen") ||
+         EqualsIgnoreCase(name, "alacarte");
 }
 
 std::string GeneratorHelp2D() {
@@ -83,6 +79,7 @@ std::string GeneratorHelp2D() {
     if (!reg[i].desc.empty()) oss << ": " << reg[i].desc;
     oss << "\n";
   }
+  oss << "  Aliases: alacarte-rectgen, rectgen, alacarte\n";
   return oss.str();
 }
 

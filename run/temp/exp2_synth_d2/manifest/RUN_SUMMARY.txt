@@ -1,5 +1,5 @@
 # EXP-2 synthetic (Dim=2) runner output
-timestamp=2026-02-23T13:45:18+00:00
+timestamp=2026-02-23T13:47:01+00:00
 build_type=Release
 clean_temp=0
 threads=1

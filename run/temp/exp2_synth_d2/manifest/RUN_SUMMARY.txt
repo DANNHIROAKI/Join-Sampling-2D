@@ -1,5 +1,5 @@
 # EXP-2 synthetic (Dim=2) runner output
-timestamp=2026-02-23T13:47:01+00:00
+timestamp=2026-02-24T06:40:22+00:00
 build_type=Release
 clean_temp=0
 threads=1
@@ -7,25 +7,34 @@ repeats=3
 seed=1
 gen=alacarte_rectgen
 gen_seed=1
-rectgen_script=/home/dhy/PhD/Comp-26.2.23/SJS-2D/tools/alacarte_rectgen_generate.py
+rectgen_script=/home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/tools/alacarte_rectgen_generate.py
 audit_pairs=2000000
 audit_seed=1
 budget_B(j_star)=10000000
 w_small=1024
 enum_cap=0
+run_signature=3100241693-457
 alphas_A=0.1 0.3 1 3 10 30 100 300 1000
 N_fixed=1000000
 t_fixed=100000
 alpha_fixed=200
 Ns_B=100000 200000 500000 1000000 2000000 5000000
 ts_C=100000 300000 1000000 3000000 10000000 30000000 100000000 300000000
-max_parallel=126
+max_parallel=12
+par_alpha=12
+par_N=2
+par_t_small=4
+par_t_large=1
+max_parallel_cap=12
+mem_per_task_gb=12
+mem_reserve_gb=8
 max_retries=2
+retry_backoff_sec=2
 timeout_sec=0
 failures=0
 
 Outputs:
-  - Per-task logs : /home/dhy/PhD/Comp-26.2.23/SJS-2D/run/temp/exp2_synth_d2/logs/<task_id>.log
-  - Per-task CSV  : /home/dhy/PhD/Comp-26.2.23/SJS-2D/run/temp/exp2_synth_d2/out/<sweep>/<task_id>/run.csv
-  - Merged CSVs   : /home/dhy/PhD/Comp-26.2.23/SJS-2D/run/temp/exp2_synth_d2/manifest/merged/*_merged.csv
-  - Failures list : /home/dhy/PhD/Comp-26.2.23/SJS-2D/run/temp/exp2_synth_d2/manifest/FAILURES.tsv
+  - Per-task logs : /home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/logs/<task_id>.log
+  - Per-task CSV  : /home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/out/<sweep>/<task_id>/run.csv
+  - Merged CSVs   : /home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/manifest/merged/*_merged.csv
+  - Failures list : /home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/manifest/FAILURES.tsv

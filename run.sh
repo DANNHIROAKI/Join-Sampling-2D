@@ -23,7 +23,7 @@
 #
 # Notes:
 #   - This repo build is Dim=2 only.
-#   - Synthetic data generation uses alacarte-rectgen only.
+#   - Synthetic data generation uses the local Alacarte source only.
 #
 # Usage:
 #   chmod +x run.sh
@@ -51,7 +51,15 @@
 #
 #   # Concurrency & robustness
 #   MAX_PARALLEL=4             # hard cap on concurrent tasks
+#   PAR_ALPHA=8                # optional per-sweep override
+#   PAR_N=2                    # optional per-sweep override
+#   PAR_T_SMALL=4              # optional per-sweep override
+#   PAR_T_LARGE=1              # optional per-sweep override
+#   MAX_PARALLEL_CAP=12        # default cap used when MAX_PARALLEL is unset
+#   MEM_PER_TASK_GB=12         # heuristic memory per task when MAX_PARALLEL is unset
+#   MEM_RESERVE_GB=8           # reserved memory for OS / page cache
 #   MAX_RETRIES=2
+#   RETRY_BACKOFF_SEC=2        # linear backoff between retry rounds
 #   TIMEOUT_SEC=0              # 0 disables timeout; if >0 uses `timeout` when available
 #
 #   # Parameter grids
@@ -187,12 +195,10 @@ sanitize_token() {
 }
 
 supports_wait_n() {
-  # bash >= 4.3 supports `wait -n`.
-  # On supported shells with no jobs, it returns 127.
-  # On unsupported shells, it returns 2 and prints "invalid option".
-  wait -n 2>/dev/null
-  local rc=$?
-  [[ "$rc" -ne 2 ]]
+  # Avoid probing by executing `wait -n` because that can accidentally reap jobs.
+  local major="${BASH_VERSINFO[0]:-0}"
+  local minor="${BASH_VERSINFO[1]:-0}"
+  (( major > 4 || (major == 4 && minor >= 3) ))
 }
 
 wait_for_slot() {
@@ -250,6 +256,29 @@ merge_csv_dir() {
   done < <(find "$dir" -type f -name run.csv | sort)
 }
 
+build_run_signature() {
+  {
+    echo "build_type=$BUILD_TYPE"
+    echo "threads=$THREADS"
+    echo "repeats=$REPEATS"
+    echo "seed=$SEED"
+    echo "gen=$GEN"
+    echo "gen_seed=$GEN_SEED"
+    echo "rectgen_script=$RECTGEN_SCRIPT"
+    echo "audit_pairs=$AUDIT_PAIRS"
+    echo "audit_seed=$AUDIT_SEED"
+    echo "budget_B=$BUDGET_B"
+    echo "w_small=$W_SMALL"
+    echo "enum_cap=$ENUM_CAP"
+    echo "alphas_A=$ALPHAS_A"
+    echo "N_fixed=$N_FIXED"
+    echo "t_fixed=$T_FIXED"
+    echo "alpha_fixed=$ALPHA_FIXED"
+    echo "Ns_B=$NS_B"
+    echo "ts_C=$TS_C"
+  } | cksum | awk '{print $1 "-" $2}'
+}
+
 # ----------------------------
 # Resolve repo root
 # ----------------------------
@@ -291,7 +320,12 @@ W_SMALL="${W_SMALL:-1024}"
 ENUM_CAP="${ENUM_CAP:-0}"
 
 MAX_RETRIES="${MAX_RETRIES:-2}"
+RETRY_BACKOFF_SEC="${RETRY_BACKOFF_SEC:-2}"
 TIMEOUT_SEC="${TIMEOUT_SEC:-0}"
+
+MAX_PARALLEL_CAP="${MAX_PARALLEL_CAP:-12}"
+MEM_PER_TASK_GB="${MEM_PER_TASK_GB:-12}"
+MEM_RESERVE_GB="${MEM_RESERVE_GB:-8}"
 
 ALPHAS_A="${ALPHAS_A:-0.1 0.3 1 3 10 30 100 300 1000}"
 N_FIXED="${N_FIXED:-1000000}"
@@ -371,21 +405,45 @@ MEM_GB="$(mem_gb_safe)"
 if [[ -n "${MAX_PARALLEL:-}" ]]; then
   MAX_PARALLEL_USER="$MAX_PARALLEL"
 else
-  # Conservative: assume ~8GB per task is safe for most points.
-  # (Huge t / huge N runs are additionally forced to low parallelism below.)
-  MAX_PARALLEL_USER=$(( MEM_GB / 8 ))
-  (( MAX_PARALLEL_USER < 1 )) && MAX_PARALLEL_USER=1
-  (( MAX_PARALLEL_USER > NPROC )) && MAX_PARALLEL_USER=$NPROC
+  # Auto parallelism uses both CPU and memory limits, then caps hard to avoid
+  # over-committing on very large hosts.
+  cpu_per_task="$THREADS"
+  (( cpu_per_task < 1 )) && cpu_per_task=1
+  cpu_cap=$(( NPROC / cpu_per_task ))
+  (( cpu_cap < 1 )) && cpu_cap=1
+  if (( cpu_cap > 1 )); then
+    cpu_cap=$(( cpu_cap - 1 ))  # leave one core for system + I/O
+  fi
+
+  mem_budget=$(( MEM_GB - MEM_RESERVE_GB ))
+  if (( mem_budget < MEM_PER_TASK_GB )); then
+    mem_budget="$MEM_PER_TASK_GB"
+  fi
+  mem_cap=$(( mem_budget / MEM_PER_TASK_GB ))
+  (( mem_cap < 1 )) && mem_cap=1
+
+  MAX_PARALLEL_USER="$cpu_cap"
+  (( MAX_PARALLEL_USER > mem_cap )) && MAX_PARALLEL_USER="$mem_cap"
+  (( MAX_PARALLEL_USER > MAX_PARALLEL_CAP )) && MAX_PARALLEL_USER="$MAX_PARALLEL_CAP"
 fi
 MAX_PARALLEL="$MAX_PARALLEL_USER"
 
-PAR_ALPHA="$MAX_PARALLEL"
+PAR_ALPHA="${PAR_ALPHA:-$MAX_PARALLEL}"
 PAR_N="${PAR_N:-$(( MAX_PARALLEL > 2 ? 2 : MAX_PARALLEL ))}"
-PAR_T_SMALL="$MAX_PARALLEL"
-PAR_T_LARGE=1
+PAR_T_SMALL="${PAR_T_SMALL:-$(( MAX_PARALLEL > 4 ? 4 : MAX_PARALLEL ))}"
+PAR_T_LARGE="${PAR_T_LARGE:-1}"
+
+(( PAR_ALPHA < 1 )) && PAR_ALPHA=1
+(( PAR_N < 1 )) && PAR_N=1
+(( PAR_T_SMALL < 1 )) && PAR_T_SMALL=1
+(( PAR_T_LARGE < 1 )) && PAR_T_LARGE=1
+
+RUN_SIGNATURE="$(build_run_signature)"
 
 log "Host: nproc=$NPROC, mem~${MEM_GB}GB"
-log "Parallelism: alpha=$PAR_ALPHA, N=$PAR_N, t_small=$PAR_T_SMALL, t_large=$PAR_T_LARGE"
+log "Parallelism: max=$MAX_PARALLEL, alpha=$PAR_ALPHA, N=$PAR_N, t_small=$PAR_T_SMALL, t_large=$PAR_T_LARGE"
+log "Auto-parallel knobs: cap=$MAX_PARALLEL_CAP, mem_per_task_gb=$MEM_PER_TASK_GB, mem_reserve_gb=$MEM_RESERVE_GB"
+log "Run signature: $RUN_SIGNATURE"
 
 # ----------------------------
 # Core task runner
@@ -399,6 +457,7 @@ run_one_task() {
   local method="$6"
   local variant="$7"
   local force="$8"
+  local attempt="${9:-0}"
 
   local ok_flag="$STATUS_ROOT/${task_id}.ok"
   local fail_flag="$STATUS_ROOT/${task_id}.fail"
@@ -409,9 +468,10 @@ run_one_task() {
   local log_file="$LOG_ROOT/${task_id}.log"
   local csv_file="$out_dir/run.csv"
 
-  if [[ "$force" != "1" && -f "$ok_flag" && -f "$csv_file" ]]; then
-    # Double-check the CSV still looks good.
-    if csv_all_ok "$csv_file" >/dev/null 2>&1; then
+  if [[ "$force" != "1" && -f "$ok_flag" && -f "$csv_file" && -f "$meta_flag" ]]; then
+    # Only resume if both output CSV and run-signature match.
+    if grep -Fxq "run_signature=$RUN_SIGNATURE" "$meta_flag" \
+      && csv_all_ok "$csv_file" >/dev/null 2>&1; then
       echo 0 > "$exit_flag"
       return 0
     fi
@@ -454,6 +514,8 @@ run_one_task() {
   )
 
   {
+    echo "run_signature=$RUN_SIGNATURE"
+    echo "attempt=$attempt"
     echo "task_id=$task_id"
     echo "sweep=$sweep"
     echo "N=$N"
@@ -513,7 +575,7 @@ run_task_file_with_parallel() {
     # Skip comments
     [[ "$task_id" =~ ^# ]] && continue
     wait_for_slot "$parallel"
-    (run_one_task "$task_id" "$sweep" "$N" "$alpha" "$t" "$method" "$variant" "$force") &
+    (run_one_task "$task_id" "$sweep" "$N" "$alpha" "$t" "$method" "$variant" "$force" "$attempt") &
   done < "$task_file"
 
   wait || true
@@ -644,18 +706,24 @@ run_with_retries() {
 
   local tmp_fail="$MANIFEST_DIR/${name}_FAILURES.tsv"
   collect_failures_from_task_file "$task_file" "$tmp_fail"
+  local failed_now
+  failed_now="$(task_count "$tmp_fail")"
 
   local attempt=1
-  while [[ -s "$tmp_fail" && "$attempt" -le "$MAX_RETRIES" ]]; do
-    warn "$name: retrying failures (attempt $attempt / $MAX_RETRIES)"
+  while (( failed_now > 0 && attempt <= MAX_RETRIES )); do
+    warn "$name: retrying failures (attempt $attempt / $MAX_RETRIES, failed=$failed_now)"
+    if (( RETRY_BACKOFF_SEC > 0 )); then
+      sleep $(( RETRY_BACKOFF_SEC * attempt ))
+    fi
     # Force rerun: delete previous outputs for these failed tasks.
     run_task_file_with_parallel "$tmp_fail" "$parallel" "$attempt" 1
     collect_failures_from_task_file "$task_file" "$tmp_fail"
+    failed_now="$(task_count "$tmp_fail")"
     attempt=$((attempt + 1))
   done
 
-  if [[ -s "$tmp_fail" ]]; then
-    warn "$name: still has failures after retries: $(wc -l < "$tmp_fail" | tr -d '[:space:]') tasks"
+  if (( failed_now > 0 )); then
+    warn "$name: still has failures after retries: $failed_now tasks"
   else
     log "$name: all tasks OK"
   fi
@@ -733,6 +801,7 @@ fi
   echo "budget_B(j_star)=$BUDGET_B"
   echo "w_small=$W_SMALL"
   echo "enum_cap=$ENUM_CAP"
+  echo "run_signature=$RUN_SIGNATURE"
   echo "alphas_A=$ALPHAS_A"
   echo "N_fixed=$N_FIXED"
   echo "t_fixed=$T_FIXED"
@@ -740,7 +809,15 @@ fi
   echo "Ns_B=$NS_B"
   echo "ts_C=$TS_C"
   echo "max_parallel=$MAX_PARALLEL"
+  echo "par_alpha=$PAR_ALPHA"
+  echo "par_N=$PAR_N"
+  echo "par_t_small=$PAR_T_SMALL"
+  echo "par_t_large=$PAR_T_LARGE"
+  echo "max_parallel_cap=$MAX_PARALLEL_CAP"
+  echo "mem_per_task_gb=$MEM_PER_TASK_GB"
+  echo "mem_reserve_gb=$MEM_RESERVE_GB"
   echo "max_retries=$MAX_RETRIES"
+  echo "retry_backoff_sec=$RETRY_BACKOFF_SEC"
   echo "timeout_sec=$TIMEOUT_SEC"
   echo "failures=$FAIL_N"
   echo

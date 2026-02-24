@@ -1,7 +1,8 @@
 #pragma once
 // sjs/data/synthetic/alacarte_rectgen.h
 //
-// Synthetic dataset generator backed by the Python package `alacarte-rectgen`.
+// Synthetic dataset generator backed by the local Alacarte source tree
+// (Alacarte/alacarte_rectgen.py) in this repository.
 //
 // Motivation
 // ----------
@@ -9,7 +10,7 @@
 // output density:
 //   alpha_out = |J(R,S)| / (|R| + |S|)
 //
-// The alacarte-rectgen library provides:
+// The local Alacarte module provides:
 //   R, S, info = alacarte_rectgen.make_rectangles_R_S(...)
 // and supports tuning expected alpha_out by adjusting a coverage parameter.
 //
@@ -30,6 +31,9 @@
 //   - rectgen_script  : Path to tools/alacarte_rectgen_generate.py
 //                      (default: env SJS_ALACARTE_RECTGEN_SCRIPT or
 //                       "tools/alacarte_rectgen_generate.py")
+//   - alacarte_module : Path to Alacarte/alacarte_rectgen.py
+//                      (default: env SJS_ALACARTE_MODULE or
+//                       resolved from rectgen_script location)
 //   - audit_pairs     : u64 number of pairs for pair-sampling audit (default 2,000,000)
 //                       set to 0 to disable audit
 //   - audit_seed      : u64 seed for audit sampling (default 0)
@@ -246,6 +250,8 @@ class AlacarteRectGenGenerator final : public ISyntheticGenerator<Dim, T> {
     const u64 audit_pairs = detail::GetParamU64(spec.params, "audit_pairs", 2'000'000ULL);
     const u64 audit_seed = detail::GetParamU64(spec.params, "audit_seed", 0ULL);
     const bool keep_files = detail::GetParamBool(spec.params, "keep_files", false);
+    const std::string alacarte_module = detail::GetParamOrEnv(
+        spec.params, "alacarte_module", "SJS_ALACARTE_MODULE", "");
 
     // Temp output.
     // You may override the base temp directory via:
@@ -277,12 +283,16 @@ class AlacarteRectGenGenerator final : public ISyntheticGenerator<Dim, T> {
         << " --report_path=" << detail::ShellQuote(rep_path.string())
         << " --audit_pairs=" << audit_pairs
         << " --audit_seed=" << audit_seed;
+    if (!alacarte_module.empty()) {
+      cmd << " --alacarte_module=" << detail::ShellQuote(alacarte_module);
+    }
 
     const int rc = std::system(cmd.str().c_str());
     if (rc != 0) {
       detail::SetErr(err,
                      "AlacarteRectGenGenerator: python generator failed rc=" + std::to_string(rc) +
-                     ". Ensure: pip install alacarte-rectgen");
+                     ". Ensure local Alacarte source is available (Alacarte/alacarte_rectgen.py) "
+                     "or set spec.params['alacarte_module'] / env SJS_ALACARTE_MODULE.");
       if (!keep_files) {
         std::error_code ec;
         fs::remove_all(tmp_dir, ec);
@@ -342,7 +352,7 @@ class AlacarteRectGenGenerator final : public ISyntheticGenerator<Dim, T> {
       else report->alpha_achieved = spec.alpha;
 
       std::ostringstream notes;
-      notes << "alacarte-rectgen";
+      notes << "alacarte-local";
       if (has_alpha_expected) notes << " alpha_expected_est=" << alpha_expected_est;
       if (has_coverage) notes << " coverage=" << coverage;
       if (has_p_est) notes << " pair_p_est=" << p_est;

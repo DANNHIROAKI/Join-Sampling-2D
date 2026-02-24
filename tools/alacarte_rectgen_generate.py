@@ -2,8 +2,8 @@
 """tools/alacarte_rectgen_generate.py
 
 Generate controllable output-density synthetic axis-aligned hyper-rectangles
-using the `alacarte-rectgen` package, then export to the SJS-HighDims binary
-format (SJSBOX v1).
+using the local `Alacarte/alacarte_rectgen.py` source in this repository, then
+export to the SJS-HighDims binary format (SJSBOX v1).
 
 This is meant to be the *single source of truth* for synthetic dataset
 generation in this repo when you choose:
@@ -46,6 +46,8 @@ import struct
 import sys
 import time
 from dataclasses import dataclass
+import importlib.util
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 
@@ -260,9 +262,41 @@ def _safe_float(x: Any) -> Optional[float]:
         return None
 
 
+def _load_local_alacarte(module_override: str = ""):
+    """Load the local Alacarte generator module from source.
+
+    Priority:
+      1) --alacarte_module (explicit override)
+      2) <repo_root>/Alacarte/alacarte_rectgen.py (default)
+    """
+    mod_path: Optional[Path] = None
+    if module_override:
+        mod_path = Path(module_override).expanduser().resolve()
+    else:
+        # tools/alacarte_rectgen_generate.py -> repo root -> Alacarte/alacarte_rectgen.py
+        mod_path = (Path(__file__).resolve().parent.parent / "Alacarte" / "alacarte_rectgen.py").resolve()
+
+    if not mod_path.exists():
+        raise FileNotFoundError(f"Local Alacarte module not found: {mod_path}")
+
+    spec = importlib.util.spec_from_file_location("sjs_local_alacarte_rectgen", str(mod_path))
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot create import spec for local module: {mod_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    # Defensive API checks used by this script.
+    for fn in ("make_rectangles_R_S", "estimate_alpha_by_pair_sampling"):
+        if not hasattr(module, fn):
+            raise AttributeError(f"Local module missing required function: {fn}")
+
+    return module, str(mod_path)
+
+
 def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Generate synthetic box datasets using alacarte-rectgen and export to SJSBOX binary.",
+        description="Generate synthetic box datasets using local Alacarte source and export to SJSBOX binary.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -279,6 +313,12 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     p.add_argument("--dataset_name", type=str, default="synthetic", help="semantic dataset name for reports")
     p.add_argument("--report_path", type=str, default="", help="write JSON audit report to this path")
     p.add_argument("--print_report", action="store_true", help="print JSON audit report to stdout")
+    p.add_argument(
+        "--alacarte_module",
+        type=str,
+        default="",
+        help="override path to local Alacarte/alacarte_rectgen.py",
+    )
 
     # Optional CSV export (debug only).
     p.add_argument("--write_csv", action="store_true", help="also write CSV relations (debug; can be huge)")
@@ -318,11 +358,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 2
 
     try:
-        import alacarte_rectgen as ar
+        ar, alacarte_module_path = _load_local_alacarte(args.alacarte_module)
     except Exception as ex:
-        _eprint("[rectgen][FATAL] Failed to import alacarte_rectgen.")
-        _eprint("Install with: pip install alacarte-rectgen")
-        _eprint(f"Import error: {ex}")
+        _eprint("[rectgen][FATAL] Failed to load local Alacarte module.")
+        _eprint("Expected source file: <repo>/Alacarte/alacarte_rectgen.py")
+        _eprint(f"Load error: {ex}")
         return 2
 
     # ----------------------------
@@ -427,6 +467,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             "shape_sigma": float(shape_sigma),
             "tune_tol_rel": float(tune_tol_rel),
             "dtype": "float32",
+            "module_source": "local_alacarte",
+            "alacarte_module_path": alacarte_module_path,
         },
         "paths": {
             "out_r": os.path.abspath(args.out_r),

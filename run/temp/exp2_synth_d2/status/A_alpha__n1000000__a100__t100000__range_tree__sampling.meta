@@ -1,3 +1,5 @@
+run_signature=3100241693-457
+attempt=0
 task_id=A_alpha__n1000000__a100__t100000__range_tree__sampling
 sweep=A_alpha
 N=1000000
@@ -5,4 +7,4 @@ alpha=100
 t=100000
 method=range_tree
 variant=sampling
-cmd=/home/dhy/PhD/SJS-2D/build/release/sjs_run --dataset_source=synthetic --dataset=d2_stripe_n1000000_a100_gs1 --dim=2 --gen=stripe --n_r=1000000 --n_s=1000000 --alpha=100 --gen_seed=1 --method=range_tree --variant=sampling --t=100000 --seed=1 --repeats=3 --threads=1 --j_star=10000000 --enum_cap=0 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/SJS-2D/run/temp/exp2_synth_d2/out/A_alpha/A_alpha__n1000000__a100__t100000__range_tree__sampling --results_file=/home/dhy/PhD/SJS-2D/run/temp/exp2_synth_d2/out/A_alpha/A_alpha__n1000000__a100__t100000__range_tree__sampling/run.csv --log_level=info --log_timestamp=1 --control_axis=1 --core_lo=0.45 --core_hi=0.55 --gap_factor=0.1 --delta_factor=0.25 --shuffle_strips=true --shuffle_r=false --swap_sides=false --w_small=1024
+cmd=/home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/build/release/sjs_run --dataset_source=synthetic --dataset=d2_alacarte_rectgen_n1000000_a100_gs1 --dim=2 --gen=alacarte_rectgen --n_r=1000000 --n_s=1000000 --alpha=100 --gen_seed=1 --method=range_tree --variant=sampling --t=100000 --seed=1 --repeats=3 --threads=1 --j_star=10000000 --enum_cap=0 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/out/A_alpha/A_alpha__n1000000__a100__t100000__range_tree__sampling --results_file=/home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/out/A_alpha/A_alpha__n1000000__a100__t100000__range_tree__sampling/run.csv --log_level=info --log_timestamp=1 --rectgen_script=/home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/tools/alacarte_rectgen_generate.py --audit_pairs=2000000 --audit_seed=1 --w_small=1024

@@ -1,8 +1,8 @@
-2026-02-22 07:00:46.190 [INFO] Generated dataset: d2_stripe_n1000000_a200_gs1 R= 1000000 S= 1000000 gen= stripe report= {"generator":"stripe_ctrl_alpha","dataset":"d2_stripe_n1000000_a200_gs1","n_r":1000000,"n_s":1000000,"has_exact_k":true,"k_target":400000000,"k_achieved":400000000,"alpha_target":200,"alpha_achieved":200,"notes":"control_axis=1, core=[0.45,0.55], g=9.99999e-08, h=9e-07, delta=2.5e-08, shuffle_strips=1, shuffle_r=0, k_overridden=0"}
-2026-02-22 07:00:46.190 [INFO] Baseline: kd_tree_2drc_sampling method= kd_tree variant= sampling
-2026-02-22 07:01:51.014 [INFO] Run ok (rep= 0 ) wall_ms= 64824.3 count= 4e+08 (exact) samples= 100000000
-2026-02-22 07:02:57.254 [INFO] Run ok (rep= 1 ) wall_ms= 66220 count= 4e+08 (exact) samples= 100000000
-2026-02-22 07:04:03.143 [INFO] Run ok (rep= 2 ) wall_ms= 65870.3 count= 4e+08 (exact) samples= 100000000
-2026-02-22 07:04:03.162 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":65638.2,"stdev":726.229,"sem":419.288,"min":64824.3,"max":66220,"median":65870.3,"p90":66150.1,"p95":66185,"p99":66213}
-2026-02-22 07:04:03.162 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":65638.2,"stdev":726.229,"sem":419.288,"min":64824.3,"max":66220,"median":65870.3,"p90":66150.1,"p95":66185,"p99":66213} ok_rate= 1
-2026-02-22 07:04:03.162 [INFO] Wrote results to: /home/dhy/PhD/SJS-2D/run/temp/exp2_synth_d2/out/C_t/C_t__n1000000__a200__t100000000__kd_tree__sampling/run.csv
+2026-02-24 06:07:23.367 [INFO] Generated dataset:  R= 1000000 S= 1000000 gen= alacarte_rectgen report= {"generator":"alacarte_rectgen","dataset":"d2_alacarte_rectgen_n1000000_a200_gs1","n_r":1000000,"n_s":1000000,"has_exact_k":false,"k_target":0,"k_achieved":0,"alpha_target":200,"alpha_achieved":207.75,"notes":"alacarte-rectgen alpha_expected_est=201.691 coverage=94.4273 pair_p_est=0.000403381 alpha_hat_est=207.75 epsilon_alpha=0.03875 audit_pairs=2000000"}
+2026-02-24 06:07:23.367 [INFO] Baseline: kd_tree_2drc_sampling method= kd_tree variant= sampling
+2026-02-24 06:07:55.300 [INFO] Run ok (rep= 0 ) wall_ms= 31932.8 count= 4.03242e+08 (exact) samples= 100000000
+2026-02-24 06:08:27.264 [INFO] Run ok (rep= 1 ) wall_ms= 31936.7 count= 4.03242e+08 (exact) samples= 100000000
+2026-02-24 06:08:59.226 [INFO] Run ok (rep= 2 ) wall_ms= 31934.2 count= 4.03242e+08 (exact) samples= 100000000
+2026-02-24 06:08:59.255 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":31934.6,"stdev":1.94771,"sem":1.12451,"min":31932.8,"max":31936.7,"median":31934.2,"p90":31936.2,"p95":31936.4,"p99":31936.6}
+2026-02-24 06:08:59.255 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":31934.6,"stdev":1.94771,"sem":1.12451,"min":31932.8,"max":31936.7,"median":31934.2,"p90":31936.2,"p95":31936.4,"p99":31936.6} ok_rate= 1
+2026-02-24 06:08:59.255 [INFO] Wrote results to: /home/dhy/PhD/Comp-26.2.23/Join-Sampling-2D/run/temp/exp2_synth_d2/out/C_t/C_t__n1000000__a200__t100000000__kd_tree__sampling/run.csv

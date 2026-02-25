@@ -1279,4 +1279,4 @@ if (( FAIL_N > 0 )); then
   exit 1
 fi
 
-log "All tasks completed successfully."
+log "All tasks completed successfully." 

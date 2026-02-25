@@ -1,0 +1,92 @@
+{
+  "base": {
+    "dataset": {
+      "source": "synthetic",
+      "name": "rectgen_t",
+      "dim": 2,
+      "synthetic": {
+        "generator": "alacarte_rectgen",
+        "n_r": 100000,
+        "n_s": 100000,
+        "alpha": 1.0,
+        "seed": 1,
+        "params": {}
+      }
+    },
+    "run": {
+      "method": "ours",
+      "variant": "sampling",
+      "t": 10000,
+      "seed": 1,
+      "repeats": 3,
+      "j_star": 1000000,
+      "enum_cap": 0,
+      "write_samples": false,
+      "verify": false,
+      "extra": {
+        "pbsm_scheme": "stripes",
+        "pbsm_k": 0,
+        "pbsm_part_axis": 0,
+        "pbsm_sweep": "orthogonal",
+        "tlsop_nx": 128,
+        "tlsop_ny": 128,
+        "tlsop_reuse_sort": true,
+        "sirs_outer": "",
+        "sirs_leaf_size": 32,
+        "rej_index": "S",
+        "rej_rep_center": false,
+        "rej_count_draws": 50000,
+        "rej_max_factor": 10000
+      }
+    },
+    "output": {
+      "out_dir": "results/sweeps/t",
+      "run_tag": "t_sweep"
+    },
+    "logging": {
+      "level": "info",
+      "with_timestamp": true,
+      "with_thread_id": false
+    },
+    "sys": {
+      "threads": 1
+    }
+  },
+  "sweep": {
+    "t": [
+      1000,
+      3000,
+      10000,
+      30000,
+      100000,
+      300000,
+      1000000
+    ],
+    "method": [
+      "ours",
+      "range_tree",
+      "kd_tree"
+    ],
+    "variant": [
+      "sampling",
+      "enum_sampling",
+      "adaptive"
+    ]
+  },
+  "files": {
+    "raw": "sweep_raw.csv",
+    "summary": "sweep_summary.csv"
+  },
+  "meta": {
+    "note": "Sweep sample size t with a fixed synthetic dataset. Keep alpha moderate so EnumSampling stays feasible.\n\n[compat] This repo build supports method: ours | range_tree | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
+    "unsupported_methods_removed_from_sweep_method": [
+      "aabb",
+      "interval_tree",
+      "r_tree",
+      "pbsm",
+      "tlsop",
+      "sirs",
+      "rejection"
+    ]
+  }
+}

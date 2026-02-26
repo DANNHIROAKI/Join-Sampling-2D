@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/dhy/PhD/SJS-2D-RUN-26.2.26/build/release/cmake_install.cmake",
-		"/home/dhy/PhD/SJS-2D-RUN-26.2.26/build/release/src/cmake_install.cmake",
-		"/home/dhy/PhD/SJS-2D-RUN-26.2.26/build/release/tests/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

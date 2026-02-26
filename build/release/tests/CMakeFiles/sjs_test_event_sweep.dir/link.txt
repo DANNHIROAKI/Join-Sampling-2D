@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_test_event_sweep.dir/test_event_sweep.cpp.o -o sjs_test_event_sweep  ../src/libsjs.a -lpthread

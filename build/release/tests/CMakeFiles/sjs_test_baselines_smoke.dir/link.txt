@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_test_baselines_smoke.dir/test_baselines_smoke.cpp.o -o sjs_test_baselines_smoke  ../src/libsjs.a -lpthread

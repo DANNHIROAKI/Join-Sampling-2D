@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_verify.dir/apps/sjs_verify.cpp.o -o sjs_verify  src/libsjs.a -lpthread

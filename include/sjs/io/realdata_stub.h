@@ -25,7 +25,7 @@
 namespace sjs {
 namespace realdata {
 
-// Identifies a real dataset source type (so config/CLI can select importer).
+// Identifies a real dataset source type (so runtime options/CLI can select importer).
 enum class Source : u8 {
   OSM_PBF = 0,     // .osm.pbf (needs libosmium)
   TIGER_SHP = 1,   // ESRI Shapefile (needs GDAL/OGR or shapefile parser)

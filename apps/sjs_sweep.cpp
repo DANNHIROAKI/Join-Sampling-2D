@@ -8,10 +8,10 @@
 //   (2) sweep_summary.csv : aggregated stats per (dataset params, method, variant, t)
 //
 // Main input is a JSON sweep file (no external JSON dependency; we parse a
-// small JSON subset). You can keep your sweep files under config/sweeps/*.json.
+// small JSON subset). Sweep files can live in any directory.
 //
 // Usage:
-//   ./sjs_sweep --config=config/sweeps/alpha.json
+//   ./sjs_sweep --config=./sweeps/alpha.json
 //
 // Minimal JSON schema (all fields optional; unspecified values fall back to
 // Config defaults):
@@ -161,7 +161,7 @@ inline std::string FirstLine(std::string_view s) {
 // Path resolution helpers
 // --------------------------
 //
-// Sweep configs typically live under repo_root/config/sweeps/*.json while datasets
+// Sweep configs are often kept in a dedicated project subdirectory while datasets
 // are referenced as paths relative to the repo root (e.g., data/real/..., data/synthetic/...).
 // Users often run sjs_sweep from a build directory, in which case those relative paths
 // won't resolve under the current working directory.

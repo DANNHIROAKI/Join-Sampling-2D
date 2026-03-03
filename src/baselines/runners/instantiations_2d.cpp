@@ -12,7 +12,6 @@
 // will just instantiate these functions once here (compilers usually de-dup
 // template instantiations via COMDAT/weak ODR).
 
-#include "sjs/baselines/runners/adaptive_runner.h"
 #include "sjs/baselines/runners/enum_sampling_runner.h"
 #include "sjs/baselines/runners/sampling_runner.h"
 
@@ -34,13 +33,6 @@ template bool RunEnumSamplingOnce<2, Scalar>(IBaseline<2, Scalar>* baseline,
                                             u64 seed,
                                             RunReport* out,
                                             std::string* err);
-
-template bool RunAdaptiveOnce<2, Scalar>(IBaseline<2, Scalar>* baseline,
-                                        const Dataset<2, Scalar>& dataset,
-                                        const Config& cfg,
-                                        u64 seed,
-                                        RunReport* out,
-                                        std::string* err);
 
 }  // namespace baselines
 }  // namespace sjs

@@ -12,7 +12,6 @@
 // --------------------------
 // Baseline implementations
 // --------------------------
-#include "sjs/baselines/ours/adaptive.h"
 #include "sjs/baselines/ours/enum_sampling.h"
 #include "sjs/baselines/ours/sampling.h"
 
@@ -51,8 +50,6 @@ std::unique_ptr<IBaseline<2, Scalar>> CreateBaseline2D(Method method,
           return std::make_unique<ours::OursSamplingBaseline<2, Scalar>>();
         case Variant::EnumSampling:
           return std::make_unique<ours::OursEnumSamplingBaseline<2, Scalar>>();
-        case Variant::Adaptive:
-          return std::make_unique<ours::OursAdaptiveBaseline<2, Scalar>>();
         default:
           break;
       }
@@ -94,7 +91,7 @@ std::unique_ptr<IBaseline<2, Scalar>> CreateBaseline2D(std::string_view method,
     if (err) {
       std::ostringstream oss;
       oss << "Unknown variant: '" << variant << "'.\n";
-      oss << "Allowed variants: sampling | enum_sampling | adaptive.\n";
+      oss << "Allowed variants: sampling | enum_sampling.\n";
       oss << "Available baselines:\n" << BaselineHelp2D();
       *err = oss.str();
     }

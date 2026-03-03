@@ -377,18 +377,17 @@ fi
 MODELS_MAIN=(
   "ours enum_sampling"
   "ours sampling"
-  "ours adaptive"
   "kd_tree sampling"
 )
 
 MODELS_E_VAR=(
   "ours sampling"
-  "ours adaptive"
+  "ours enum_sampling"
 )
 
 MODELS_F=(
   "ours sampling"
-  "ours adaptive"
+  "ours enum_sampling"
   "kd_tree sampling"
 )
 

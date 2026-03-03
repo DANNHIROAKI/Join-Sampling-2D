@@ -3,10 +3,9 @@
 //
 // Unified baseline interface for Spatial Join Sampling experiments.
 //
-// This project evaluates multiple spatial-join baselines under three variants:
+// This project evaluates multiple spatial-join baselines under two variants:
 //   (1) Sampling
 //   (2) Enumerate + Sampling
-//   (3) Adaptive (threshold-based switching)
 //
 // To ensure experimental consistency, all baselines expose the same API:
 //   - Reset()      : reset internal state (does not necessarily free memory)
@@ -254,7 +253,7 @@ struct RunReport {
   CountResult count;
   SampleSet samples;
 
-  // Enumeration-related metadata (used by EnumSampling / Adaptive)
+  // Enumeration-related metadata (used by EnumSampling)
   bool used_enumeration = false;
   bool enumeration_truncated = false;
   u64 enumeration_cap = 0;
@@ -263,7 +262,7 @@ struct RunReport {
   join::JoinStats enum_stats_pass1{};
   join::JoinStats enum_stats_pass2{};
 
-  // Adaptive decision metadata
+  // Legacy adaptive metadata (kept for backward-compatible result schema)
   std::string adaptive_branch;  // e.g., "enumerate_all" or "fallback_sampling"
   u64 adaptive_pilot_pairs = 0;
 

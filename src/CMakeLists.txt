@@ -39,6 +39,9 @@ file(GLOB_RECURSE SJS_LIB_SOURCES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/core/*.cpp"
 )
 
+# Adaptive framework source is removed; keep a defensive filter for stale trees.
+list(FILTER SJS_LIB_SOURCES EXCLUDE REGEX ".*/baselines/ours/adaptive\\.cpp$")
+
 add_library(sjs STATIC ${SJS_LIB_SOURCES})
 
 target_compile_features(sjs PUBLIC cxx_std_17)

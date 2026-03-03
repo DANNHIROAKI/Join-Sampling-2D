@@ -24,7 +24,6 @@
 
 #include "baselines/baseline_factory_2d.h"
 
-#include "sjs/baselines/runners/adaptive_runner.h"
 #include "sjs/baselines/runners/enum_sampling_runner.h"
 #include "sjs/baselines/runners/sampling_runner.h"
 
@@ -309,7 +308,9 @@ int main(int argc, char** argv) {
         ok = sjs::baselines::RunEnumSamplingOnce<2, sjs::Scalar>(baseline.get(), ds, cfg, seed, &out, &local_err);
         break;
       case sjs::Variant::Adaptive:
-        ok = sjs::baselines::RunAdaptiveOnce<2, sjs::Scalar>(baseline.get(), ds, cfg, seed, &out, &local_err);
+        ok = false;
+        local_err =
+            "Adaptive variant has been removed; use --variant=sampling or --variant=enum_sampling.";
         break;
     }
 

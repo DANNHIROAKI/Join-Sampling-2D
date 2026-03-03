@@ -281,8 +281,7 @@ struct RunConfig {
   // Number of repeats (for median/CI)
   u64 repeats = 5;
 
-  // Adaptive threshold (implementation-defined; e.g., J* or time budget).
-  // Keep as generic knobs; the adaptive runner can interpret them.
+  // Legacy threshold knob kept for backward-compatible configs.
   u64 j_star = 1000000;
 
   // Stop enumerate early after this many discovered pairs (0 = disabled).
@@ -329,6 +328,9 @@ struct Config {
     }
     if (run.repeats == 0) return fail("run.repeats must be > 0");
     if (sys.threads <= 0) return fail("sys.threads must be > 0");
+    if (run.variant == Variant::Adaptive) {
+      return fail("run.variant=adaptive is no longer supported; use sampling or enum_sampling");
+    }
 
     if (dataset.source == DataSource::Binary || dataset.source == DataSource::CSV) {
       if (dataset.path_r.empty() || dataset.path_s.empty()) {

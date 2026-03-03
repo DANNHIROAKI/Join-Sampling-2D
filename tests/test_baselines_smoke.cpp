@@ -1,9 +1,8 @@
 // tests/test_baselines_smoke.cpp
 //
-// Smoke tests for all registered baselines (Dim=2) and their three variants:
+// Smoke tests for all registered baselines (Dim=2) and their variants:
 //   - Sampling
 //   - Enumerate+Sampling
-//   - Adaptive
 //
 // The goal is NOT to benchmark. It is to ensure:
 //   - factory/registry wiring works
@@ -150,7 +149,6 @@ static void TestAllBaselines(TestContext& t) {
   cfg.run.seed = 42;
   cfg.run.t = 32;
   cfg.run.enum_cap = 0;      // no truncation
-  cfg.run.j_star = 1000000;  // treat this dataset as "small" for adaptive
 
   const auto reg = BaselineRegistry2D();
   CHECK(t, reg.size() > 0);

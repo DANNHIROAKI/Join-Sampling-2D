@@ -20,7 +20,6 @@
 
 #include "baselines/baseline_factory_2d.h"
 
-#include "sjs/baselines/runners/adaptive_runner.h"
 #include "sjs/baselines/runners/enum_sampling_runner.h"
 #include "sjs/baselines/runners/sampling_runner.h"
 
@@ -300,15 +299,15 @@ inline void PrintUsage() {
       << "sjs_run: single experiment runner\n\n"
       << "Common flags:\n"
       << "  --method=<ours|kd_tree>\n"
-      << "  --variant=<sampling|enum_sampling|adaptive>\n"
+      << "  --variant=<sampling|enum_sampling>\n"
       << "  --t=<num_samples>\n"
       << "  --seed=<seed>           (base seed; repeats add +rep)\n"
       << "  --repeats=<k>\n"
       << "  --out_dir=<dir>\n"
       << "  --results_file=<path>   (default: <out_dir>/run.csv)\n"
       << "  --write_samples=0|1\n"
-      << "  --enum_cap=<cap>        (EnumSampling/Adaptive; 0 means no cap)\n"
-      << "  --j_star=<threshold>    (Adaptive; 0 disables pilot enum)\n"
+      << "  --enum_cap=<cap>        (EnumSampling; 0 means no cap)\n"
+      << "  --j_star=<threshold>    (legacy knob; ignored by Sampling/EnumSampling)\n"
       << "\nDataset flags:\n"
       << "  --dataset_source=<synthetic|binary|csv>\n"
       << "  --dataset=<name>\n"
@@ -452,8 +451,8 @@ int main(int argc, char** argv) {
             baseline.get(), ds, cfg, seed, &report, &local_err);
         break;
       case sjs::Variant::Adaptive:
-        ok = sjs::baselines::RunAdaptiveOnce<2, sjs::Scalar>(
-            baseline.get(), ds, cfg, seed, &report, &local_err);
+        ok = false;
+        local_err = "Adaptive variant has been removed; use --variant=sampling or --variant=enum_sampling.";
         break;
     }
 

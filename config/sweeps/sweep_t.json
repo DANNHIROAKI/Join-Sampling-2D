@@ -68,8 +68,7 @@
     ],
     "variant": [
       "sampling",
-      "enum_sampling",
-      "adaptive"
+      "enum_sampling"
     ]
   },
   "files": {

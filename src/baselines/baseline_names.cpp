@@ -26,8 +26,6 @@ Span<const BaselineSpec2D> BaselineRegistry2D() noexcept {
        "Our method (Framework II): 2-pass sweep + event-block primitives, exact i.i.d. uniform"},
       {Method::Ours, Variant::EnumSampling, "ours/enum_sampling",
        "Our method (Framework I): materialize full join then uniform index sampling"},
-      {Method::Ours, Variant::Adaptive, "ours/adaptive",
-       "Our method (Framework III): budgeted full-cache + prefetch sample-cache"},
 
       // RS-over-SRJ baseline (ported third_party implementation) — sampling-only
       {Method::RSOverSRJ, Variant::Sampling, "kd_tree/sampling",
@@ -66,7 +64,6 @@ std::string BaselineHelp2D() {
   oss << "\n  Variants (canonical):\n";
   oss << "    - sampling\n";
   oss << "    - enum_sampling\n";
-  oss << "    - adaptive\n";
 
   oss << "\n  Supported (Dim=2) method/variant combinations:\n";
   const auto reg = BaselineRegistry2D();

@@ -16,10 +16,10 @@
 // This file is intentionally self-contained and does not depend on baseline
 // code. It is primarily used by io/load_dataset_2d.cpp and by small tooling.
 
-#include "sjs/core/logging.h"
-#include "sjs/core/types.h"
+#include "core/logging.h"
+#include "core/types.h"
 
-#include "sjs/data/synthetic/generator.h"
+#include "data/synthetic/generator.h"
 
 #include <algorithm>
 #include <sstream>

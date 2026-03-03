@@ -10,14 +10,14 @@
 //
 // We intentionally keep the output schema stable and append-friendly.
 
-#include "sjs/core/assert.h"
-#include "sjs/core/logging.h"
-#include "sjs/core/stats.h"
-#include "sjs/core/types.h"
+#include "core/assert.h"
+#include "core/logging.h"
+#include "core/stats.h"
+#include "core/types.h"
 
-#include "sjs/baselines/baseline_api.h"
-#include "sjs/io/csv_io.h"
-#include "sjs/io/write_results.h"
+#include "baselines/baseline_api.h"
+#include "io/csv_io.h"
+#include "io/write_results.h"
 
 #include <algorithm>
 #include <chrono>

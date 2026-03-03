@@ -9,9 +9,9 @@
 // These invariants are crucial because several baselines rely on a deterministic
 // event ordering to make the join partitioning correct.
 
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/join/sweep_events.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "join/sweep_events.h"
 
 #include <algorithm>
 #include <iostream>

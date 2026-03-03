@@ -16,7 +16,7 @@
 //   can still include the headers; this TU simply ensures a concrete
 //   instantiation is available in the final binary.
 
-#include "sjs/baselines/ours/sampling.h"
+#include "baselines/ours/sampling.h"
 
 namespace sjs::baselines::ours {
 

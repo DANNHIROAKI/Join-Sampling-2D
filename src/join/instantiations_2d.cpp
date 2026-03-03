@@ -12,10 +12,10 @@
 //    headers simple), so these instantiations are primarily a convenience
 //    for libraries/binaries that link this TU.
 
-#include "sjs/join/join_enumerator.h"
-#include "sjs/join/join_oracle.h"
+#include "join/join_enumerator.h"
+#include "join/join_oracle.h"
 
-#include "sjs/core/types.h"
+#include "core/types.h"
 
 namespace sjs {
 namespace join {

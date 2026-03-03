@@ -7,13 +7,13 @@
 
 #include "baselines/baseline_factory_2d.h"
 
-#include "sjs/core/types.h"  // ParseMethod/ParseVariant
+#include "core/types.h"  // ParseMethod/ParseVariant
 
 // --------------------------
 // Baseline implementations
 // --------------------------
-#include "sjs/baselines/ours/enum_sampling.h"
-#include "sjs/baselines/ours/sampling.h"
+#include "baselines/ours/enum_sampling.h"
+#include "baselines/ours/sampling.h"
 
 #include "third_party/RS-over-SRJ/isrjs_kds/isrjs_kds.hpp"
 

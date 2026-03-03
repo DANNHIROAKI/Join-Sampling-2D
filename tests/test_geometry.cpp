@@ -6,11 +6,11 @@
 //  - Predicates: contains/intersects
 //  - Embedding helpers (join -> range query)
 
-#include "sjs/core/types.h"
-#include "sjs/geometry/box.h"
-#include "sjs/geometry/embedding.h"
-#include "sjs/geometry/point.h"
-#include "sjs/geometry/predicates.h"
+#include "core/types.h"
+#include "geometry/box.h"
+#include "geometry/embedding.h"
+#include "geometry/point.h"
+#include "geometry/predicates.h"
 
 #include <cmath>
 #include <iostream>

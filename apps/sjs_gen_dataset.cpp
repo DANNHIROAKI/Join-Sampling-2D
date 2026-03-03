@@ -19,14 +19,14 @@
 //   <out_dir>/<dataset>_R.csv
 //   <out_dir>/<dataset>_S.csv
 
-#include "sjs/core/config.h"
-#include "sjs/core/logging.h"
-#include "sjs/core/types.h"
+#include "core/config.h"
+#include "core/logging.h"
+#include "core/types.h"
 
-#include "sjs/data/synthetic/generator.h"
-#include "sjs/io/binary_io.h"
-#include "sjs/io/csv_io.h"
-#include "sjs/io/dataset.h"
+#include "data/synthetic/generator.h"
+#include "io/binary_io.h"
+#include "io/csv_io.h"
+#include "io/dataset.h"
 
 #include <cctype>
 #include <filesystem>

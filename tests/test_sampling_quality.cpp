@@ -6,10 +6,10 @@
 //  - KS one-sample uniform test helper
 //  - Pair-uniformity evaluator vs a known universe
 
-#include "sjs/core/rng.h"
-#include "sjs/core/types.h"
-#include "sjs/sampling/alias_table.h"
-#include "sjs/sampling/sample_quality.h"
+#include "core/rng.h"
+#include "core/types.h"
+#include "sampling/alias_table.h"
+#include "sampling/sample_quality.h"
 
 #include <algorithm>
 #include <cmath>

@@ -13,7 +13,7 @@
 // Note: This header lives under src/ (not include/). In CMake, add ${PROJECT_SOURCE_DIR}/src
 // to your include directories so apps can:  #include "baselines/baseline_factory_2d.h".
 
-#include "sjs/baselines/baseline_api.h"
+#include "baselines/baseline_api.h"
 
 #include <memory>
 #include <string>

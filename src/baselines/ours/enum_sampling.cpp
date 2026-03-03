@@ -3,7 +3,7 @@
 // Explicit template instantiation for our method (Enumerate+Sampling variant)
 // in 2D.
 
-#include "sjs/baselines/ours/enum_sampling.h"
+#include "baselines/ours/enum_sampling.h"
 
 namespace sjs::baselines::ours {
 

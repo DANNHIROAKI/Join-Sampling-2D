@@ -12,20 +12,20 @@
 //
 // Notes
 // -----
-// - The core Dataset/Relation types live in include/sjs/io/dataset.h.
+// - The core Dataset/Relation types live in include/io/dataset.h.
 // - The actual loaders are header-only (binary_io.h/csv_io.h/generator.h).
 // - This file is intentionally minimal; it mainly wires Config -> loader.
 
-#include "sjs/core/config.h"
-#include "sjs/core/logging.h"
-#include "sjs/core/types.h"
+#include "core/config.h"
+#include "core/logging.h"
+#include "core/types.h"
 
-#include "sjs/io/binary_io.h"
-#include "sjs/io/csv_io.h"
-#include "sjs/io/dataset.h"
-#include "sjs/io/realdata_stub.h"
+#include "io/binary_io.h"
+#include "io/csv_io.h"
+#include "io/dataset.h"
+#include "io/realdata_stub.h"
 
-#include "sjs/data/synthetic/generator.h"
+#include "data/synthetic/generator.h"
 
 // Prefer the non-templated Dim=2 wrapper implemented in
 // src/data/synthetic/generator_factory_2d.cpp. We forward-declare it here

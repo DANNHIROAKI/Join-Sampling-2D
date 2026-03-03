@@ -6,10 +6,10 @@
 //
 // Goal: ensure the library's basic join machinery is correct and consistent.
 
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/join/join_enumerator.h"
-#include "sjs/join/join_oracle.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "join/join_enumerator.h"
+#include "join/join_oracle.h"
 
 #include <algorithm>
 #include <iostream>

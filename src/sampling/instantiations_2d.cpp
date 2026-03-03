@@ -6,11 +6,11 @@
 // The codebase is largely header-only. This TU exists as a convenient place to
 // centralize explicit instantiations to reduce compile times in large builds.
 
-#include "sjs/sampling/rank_sampling.h"
+#include "sampling/rank_sampling.h"
 
-#include "sjs/join/join_types.h"
+#include "join/join_types.h"
 
-#include "sjs/core/types.h"
+#include "core/types.h"
 
 #include <string>
 #include <vector>

@@ -7,11 +7,11 @@
 // that future extensions can plug in without refactoring the experiment runner.
 //
 // This file provides non-template convenience wrappers for Dim=2 that forward
-// to the header-only stubs in include/sjs/io/realdata_stub.h.
+// to the header-only stubs in include/io/realdata_stub.h.
 
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/io/realdata_stub.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "io/realdata_stub.h"
 
 #include <string>
 

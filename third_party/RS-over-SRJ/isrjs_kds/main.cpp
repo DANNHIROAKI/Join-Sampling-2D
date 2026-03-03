@@ -13,9 +13,9 @@
 
 #include "isrjs_kds.hpp"
 
-#include "sjs/core/config.h"
-#include "sjs/core/rng.h"
-#include "sjs/io/dataset.h"
+#include "core/config.h"
+#include "core/rng.h"
+#include "io/dataset.h"
 
 #include <iostream>
 #include <string>

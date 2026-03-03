@@ -12,12 +12,12 @@
 
 #include "baselines/baseline_factory_2d.h"  // lives in src/
 
-#include "sjs/core/config.h"
-#include "sjs/core/rng.h"
-#include "sjs/core/timer.h"
-#include "sjs/geometry/predicates.h"
-#include "sjs/io/dataset.h"
-#include "sjs/join/join_oracle.h"
+#include "core/config.h"
+#include "core/rng.h"
+#include "core/timer.h"
+#include "geometry/predicates.h"
+#include "io/dataset.h"
+#include "join/join_oracle.h"
 
 #include <algorithm>
 #include <cmath>

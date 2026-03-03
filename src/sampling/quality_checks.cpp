@@ -4,14 +4,14 @@
 //
 // The heavy lifting (chi-square, KS, autocorrelation, pair-uniformity) lives in
 // the header-only implementation:
-//   - include/sjs/sampling/sample_quality.h
+//   - include/sampling/sample_quality.h
 //
 // This file provides convenient wrappers and JSON-lite serialization helpers
 // so apps can record diagnostics without duplicating formatting logic.
 
-#include "sjs/sampling/sample_quality.h"
+#include "sampling/sample_quality.h"
 
-#include "sjs/core/types.h"
+#include "core/types.h"
 
 #include <cmath>
 #include <sstream>

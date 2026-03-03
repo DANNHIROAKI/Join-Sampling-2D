@@ -3,12 +3,12 @@
 // Optional explicit instantiations for Dim=2 data-generation entry points.
 //
 // Most data generation is implemented as header-only templates (see
-// include/sjs/data/synthetic/*). This TU centralizes explicit instantiations for
+// include/data/synthetic/*). This TU centralizes explicit instantiations for
 // the most common Dim=2 usage to reduce compile time in large builds.
 
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/data/synthetic/generator.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "data/synthetic/generator.h"
 
 #include <memory>
 #include <string>

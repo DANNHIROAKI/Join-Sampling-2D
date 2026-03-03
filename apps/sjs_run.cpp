@@ -20,19 +20,19 @@
 
 #include "baselines/baseline_factory_2d.h"
 
-#include "sjs/baselines/runners/enum_sampling_runner.h"
-#include "sjs/baselines/runners/sampling_runner.h"
+#include "baselines/runners/enum_sampling_runner.h"
+#include "baselines/runners/sampling_runner.h"
 
-#include "sjs/core/config.h"
-#include "sjs/core/logging.h"
-#include "sjs/core/stats.h"
-#include "sjs/core/timer.h"
-#include "sjs/core/types.h"
+#include "core/config.h"
+#include "core/logging.h"
+#include "core/stats.h"
+#include "core/timer.h"
+#include "core/types.h"
 
-#include "sjs/data/synthetic/generator.h"
-#include "sjs/io/binary_io.h"
-#include "sjs/io/csv_io.h"
-#include "sjs/io/dataset.h"
+#include "data/synthetic/generator.h"
+#include "io/binary_io.h"
+#include "io/csv_io.h"
+#include "io/dataset.h"
 
 #include <algorithm>
 #include <cctype>

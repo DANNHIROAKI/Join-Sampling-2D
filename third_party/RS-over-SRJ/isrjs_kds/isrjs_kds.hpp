@@ -31,8 +31,8 @@
 #include "../utils/kdtree.hpp"
 #include "../utils/weighted_sampling.hpp"  // alias wrapper (uses sjs::AliasTable + sjs::Rng)
 
-#include "sjs/baselines/baseline_api.h"
-#include "sjs/join/join_enumerator.h"
+#include "baselines/baseline_api.h"
+#include "join/join_enumerator.h"
 
 #include <algorithm>
 #include <array>

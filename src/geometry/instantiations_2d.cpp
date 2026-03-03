@@ -6,12 +6,12 @@
 // optional, but helps reduce compilation overhead when many translation units
 // use the same Dim=2 specializations.
 
-#include "sjs/geometry/point.h"
-#include "sjs/geometry/box.h"
-#include "sjs/geometry/predicates.h"
-#include "sjs/geometry/embedding.h"
+#include "geometry/point.h"
+#include "geometry/box.h"
+#include "geometry/predicates.h"
+#include "geometry/embedding.h"
 
-#include "sjs/core/types.h"
+#include "core/types.h"
 
 namespace sjs {
 

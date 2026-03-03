@@ -3,16 +3,16 @@
 // Dim=2 correctness oracle wrappers.
 //
 // The oracle logic itself is defined as header-only templates in
-//   include/sjs/join/join_oracle.h
+//   include/join/join_oracle.h
 //
 // This compilation unit provides thin, non-templated wrappers for common
 // tooling code (verification, sampling-quality checks) that only needs Dim=2.
 
-#include "sjs/join/join_oracle.h"
+#include "join/join_oracle.h"
 
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/join/join_types.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "join/join_types.h"
 
 #include <functional>
 #include <vector>

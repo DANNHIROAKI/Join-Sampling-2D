@@ -8,9 +8,9 @@
 // To ensure reproducibility across baselines (same seed => same sampling stream)
 // and to avoid mixing RNG sources, we wrap the project implementation here.
 
-#include "sjs/core/rng.h"
-#include "sjs/core/types.h"
-#include "sjs/sampling/alias_table.h"
+#include "core/rng.h"
+#include "core/types.h"
+#include "sampling/alias_table.h"
 
 #include <string>
 #include <vector>

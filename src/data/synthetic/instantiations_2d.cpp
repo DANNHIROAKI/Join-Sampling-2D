@@ -7,7 +7,7 @@
 // instantiated wherever used), but helps reduce compile time and object bloat
 // in large builds.
 
-#include "sjs/core/types.h"
+#include "core/types.h"
 
 // IMPORTANT: include generator.h (not individual generators) to avoid a
 // circular-include edge case where including a generator header directly would
@@ -15,7 +15,7 @@
 //
 // Including generator.h first ensures all built-in generators are visible
 // before the factory is instantiated.
-#include "sjs/data/synthetic/generator.h"
+#include "data/synthetic/generator.h"
 
 namespace sjs {
 namespace synthetic {

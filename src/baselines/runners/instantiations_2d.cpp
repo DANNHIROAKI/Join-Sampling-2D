@@ -12,8 +12,8 @@
 // will just instantiate these functions once here (compilers usually de-dup
 // template instantiations via COMDAT/weak ODR).
 
-#include "sjs/baselines/runners/enum_sampling_runner.h"
-#include "sjs/baselines/runners/sampling_runner.h"
+#include "baselines/runners/enum_sampling_runner.h"
+#include "baselines/runners/sampling_runner.h"
 
 namespace sjs {
 namespace baselines {

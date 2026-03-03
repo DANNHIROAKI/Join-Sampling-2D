@@ -5,19 +5,19 @@
 // Motivation
 // ----------
 // The library provides header-only templates for event building
-//   (see include/sjs/join/sweep_events.h).
+//   (see include/join/sweep_events.h).
 // For apps that operate only on 2D datasets, it is convenient to have small
 // non-templated wrappers to reduce compile times and avoid template plumbing.
 //
 // These wrappers are intentionally minimal and simply forward to the template
 // implementation.
 
-#include "sjs/join/sweep_events.h"
+#include "join/sweep_events.h"
 
-#include "sjs/core/assert.h"
-#include "sjs/core/types.h"
-#include "sjs/io/dataset.h"
-#include "sjs/join/join_types.h"
+#include "core/assert.h"
+#include "core/types.h"
+#include "io/dataset.h"
+#include "join/join_types.h"
 
 #include <vector>
 

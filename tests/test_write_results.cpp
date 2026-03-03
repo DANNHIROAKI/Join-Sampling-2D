@@ -2,9 +2,9 @@
 //
 // Regression tests for write_results utilities.
 
-#include "sjs/baselines/baseline_api.h"
-#include "sjs/core/types.h"
-#include "sjs/io/write_results.h"
+#include "baselines/baseline_api.h"
+#include "core/types.h"
+#include "io/write_results.h"
 
 #include <filesystem>
 #include <fstream>

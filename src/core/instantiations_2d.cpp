@@ -10,13 +10,13 @@
 // Currently, most core utilities are non-templated, so this file mainly serves
 // as an anchor compilation unit.
 
-#include "sjs/core/assert.h"
-#include "sjs/core/config.h"
-#include "sjs/core/logging.h"
-#include "sjs/core/rng.h"
-#include "sjs/core/stats.h"
-#include "sjs/core/timer.h"
-#include "sjs/core/types.h"
+#include "core/assert.h"
+#include "core/config.h"
+#include "core/logging.h"
+#include "core/rng.h"
+#include "core/stats.h"
+#include "core/timer.h"
+#include "core/types.h"
 
 namespace sjs {
 namespace {

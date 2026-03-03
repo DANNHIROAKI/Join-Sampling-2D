@@ -103,7 +103,6 @@ enum class Variant : u8 {
 
 enum class Method : u8 {
   Ours = 0,
-  RangeTree = 1,
   RSOverSRJ = 2,
   Unknown = 255,
 };
@@ -121,8 +120,7 @@ inline constexpr std::string_view ToString(Variant v) noexcept {
 inline constexpr std::string_view ToString(Method m) noexcept {
   switch (m) {
     case Method::Ours: return "ours";
-    case Method::RangeTree: return "range_tree";
-    case Method::RSOverSRJ: return "rs_over_srj";
+    case Method::RSOverSRJ: return "kd_tree";
     case Method::Unknown: return "unknown";
   }
   return "unknown";
@@ -164,8 +162,8 @@ inline bool ParseMethod(std::string_view s, Method* out) noexcept {
 
   // Accept a few aliases to make CLI/config friendlier.
   if (detail::EqualsIgnoreCase(s, "ours")) { *out = Method::Ours; return true; }
-  if (detail::EqualsIgnoreCase(s, "range_tree") || detail::EqualsIgnoreCase(s, "rangetree")) {
-    *out = Method::RangeTree; return true;
+  if (detail::EqualsIgnoreCase(s, "kd_tree") || detail::EqualsIgnoreCase(s, "kdtree")) {
+    *out = Method::RSOverSRJ; return true;
   }
   if (detail::EqualsIgnoreCase(s, "rs_over_srj") ||
       detail::EqualsIgnoreCase(s, "rs-over-srj") ||

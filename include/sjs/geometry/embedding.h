@@ -5,7 +5,7 @@
 // conditions over points.
 //
 // Motivation:
-//  - Several baselines (KD-tree / RangeTree / SIRS-style range sampling)
+//  - Several baselines (KD-tree / SIRS-style range sampling)
 //    work over points with orthogonal constraints.
 //  - A common trick is to embed each box r into a point p(r) = [lo(r), hi(r)]
 //    in 2*Dim dimensions, then express intersection with query box q as

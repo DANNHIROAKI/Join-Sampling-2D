@@ -19,7 +19,7 @@ namespace sjs {
 template struct Point<2, Scalar>;
 template struct Box<2, Scalar>;
 
-// Embedding bounds helper used by KD/RangeTree/SIRS-style baselines.
+// Embedding bounds helper used by KD/SIRS-style baselines.
 template struct DomainBounds<2, Scalar>;
 
 // Common free-function instantiation (optional).

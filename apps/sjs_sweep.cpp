@@ -50,7 +50,7 @@
 //   "sweep": {
 //     "alpha":   [1e-8, 3e-8, 1e-7, 3e-7, 1e-6],
 //     "t":       [10000, 100000],
-//     "method":  ["ours", "range_tree"],
+//     "method":  ["ours", "kd_tree"],
 //     "variant": ["sampling", "enum_sampling", "adaptive"],
 //     "seed":    [1,2,3]              // optional; overrides repeats if provided
 //   },

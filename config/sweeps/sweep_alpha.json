@@ -67,7 +67,6 @@
     ],
     "method": [
       "ours",
-      "range_tree",
       "kd_tree"
     ],
     "variant": [
@@ -80,7 +79,7 @@
     "summary": "sweep_summary.csv"
   },
   "meta": {
-    "note": "Sweep alpha (|J|/(n_r+n_s)). This repo build only supports baselines: ours, range_tree, kd_tree. (kd_tree supports sampling only; unsupported method/variant combos will be skipped by sjs_sweep.) EnumSampling is excluded by default because it scales with |J|; add it only for small alpha or with enum_cap.\n\n[compat] This repo build supports method: ours | range_tree | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
+    "note": "Sweep alpha (|J|/(n_r+n_s)). This repo build only supports baselines: ours and kd_tree. (kd_tree supports sampling only; unsupported method/variant combos will be skipped by sjs_sweep.) EnumSampling is excluded by default because it scales with |J|; add it only for small alpha or with enum_cap.\n\n[compat] This repo build supports method: ours | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
     "unsupported_methods_original": [
       "aabb",
       "interval_tree",

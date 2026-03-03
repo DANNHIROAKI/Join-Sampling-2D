@@ -190,7 +190,7 @@ struct Dataset {
     return domain_cache;
   }
 
-  // Domain bounds for embedding-based baselines (KD/RangeTree/SIRS).
+  // Domain bounds for embedding-based baselines (KD/SIRS).
   DomainBounds<Dim, T> DomainForEmbedding() const noexcept {
     DomainBounds<Dim, T> b;
     for (const auto& x : R.boxes) b.ExpandToInclude(x);

@@ -15,7 +15,7 @@
 //             --out_dir=out/demo
 //
 //   ./sjs_run --dataset_source=binary --path_r=data/R.bin --path_s=data/S.bin
-//             --method=range_tree --variant=enum_sampling --t=10000 --enum_cap=500000
+//             --method=kd_tree --variant=sampling --t=10000
 //             --out_dir=out/bin_case
 
 #include "baselines/baseline_factory_2d.h"
@@ -299,7 +299,7 @@ inline void PrintUsage() {
   std::cerr
       << "sjs_run: single experiment runner\n\n"
       << "Common flags:\n"
-      << "  --method=<ours|range_tree|rs_over_srj>\n"
+      << "  --method=<ours|kd_tree>\n"
       << "  --variant=<sampling|enum_sampling|adaptive>\n"
       << "  --t=<num_samples>\n"
       << "  --seed=<seed>           (base seed; repeats add +rep)\n"

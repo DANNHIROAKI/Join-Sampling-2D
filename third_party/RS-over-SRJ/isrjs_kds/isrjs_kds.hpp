@@ -104,7 +104,7 @@ class RSOverSRJKDTreeSamplingBaseline final : public IBaseline<Dim, T> {
 
   Method method() const noexcept override { return Method::RSOverSRJ; }
   Variant variant() const noexcept override { return Variant::Sampling; }
-  std::string_view Name() const noexcept override { return "rs_over_srj_kds_sampling"; }
+  std::string_view Name() const noexcept override { return "kd_tree_sampling"; }
 
   void Reset() override {
     ds_ = nullptr;

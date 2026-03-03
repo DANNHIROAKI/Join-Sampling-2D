@@ -10,15 +10,11 @@
 #include "sjs/core/types.h"  // ParseMethod/ParseVariant
 
 // --------------------------
-// Baseline implementations (each provides 3 variants)
+// Baseline implementations
 // --------------------------
 #include "sjs/baselines/ours/adaptive.h"
 #include "sjs/baselines/ours/enum_sampling.h"
 #include "sjs/baselines/ours/sampling.h"
-
-#include "sjs/baselines/range_tree/adaptive.h"
-#include "sjs/baselines/range_tree/enum_sampling.h"
-#include "sjs/baselines/range_tree/sampling.h"
 
 #include "third_party/RS-over-SRJ/isrjs_kds/isrjs_kds.hpp"
 
@@ -57,19 +53,6 @@ std::unique_ptr<IBaseline<2, Scalar>> CreateBaseline2D(Method method,
           return std::make_unique<ours::OursEnumSamplingBaseline<2, Scalar>>();
         case Variant::Adaptive:
           return std::make_unique<ours::OursAdaptiveBaseline<2, Scalar>>();
-        default:
-          break;
-      }
-      break;
-
-    case Method::RangeTree:
-      switch (variant) {
-        case Variant::Sampling:
-          return std::make_unique<range_tree::RangeTreeSamplingBaseline<2, Scalar>>();
-        case Variant::EnumSampling:
-          return std::make_unique<range_tree::RangeTreeEnumSamplingBaseline<2, Scalar>>();
-        case Variant::Adaptive:
-          return std::make_unique<range_tree::RangeTreeAdaptiveBaseline<2, Scalar>>();
         default:
           break;
       }

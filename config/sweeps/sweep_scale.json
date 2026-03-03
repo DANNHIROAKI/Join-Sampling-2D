@@ -72,7 +72,6 @@
     ],
     "method": [
       "ours",
-      "range_tree",
       "kd_tree"
     ],
     "variant": [
@@ -85,7 +84,7 @@
     "summary": "sweep_summary.csv"
   },
   "meta": {
-    "note": "Scale sweep varies n_r and n_s. Current sjs_sweep takes Cartesian product of n_r x n_s; filter results for the diagonal (n_r==n_s) if you want equal-scale only.\n\n[compat] This repo build supports method: ours | range_tree | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
+    "note": "Scale sweep varies n_r and n_s. Current sjs_sweep takes Cartesian product of n_r x n_s; filter results for the diagonal (n_r==n_s) if you want equal-scale only.\n\n[compat] This repo build supports method: ours | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
     "unsupported_methods_removed_from_sweep_method": [
       "aabb",
       "interval_tree",

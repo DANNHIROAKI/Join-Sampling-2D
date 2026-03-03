@@ -29,16 +29,8 @@ Span<const BaselineSpec2D> BaselineRegistry2D() noexcept {
       {Method::Ours, Variant::Adaptive, "ours/adaptive",
        "Our method (Framework III): budgeted full-cache + prefetch sample-cache"},
 
-      // Range tree baseline
-      {Method::RangeTree, Variant::Sampling, "range_tree/sampling",
-       "Comparison method 1 (Framework II): plane sweep + orthogonal range-tree event-block primitives"},
-      {Method::RangeTree, Variant::EnumSampling, "range_tree/enum_sampling",
-       "Range-tree baseline (Framework I): materialize full join then uniform index sampling"},
-      {Method::RangeTree, Variant::Adaptive, "range_tree/adaptive",
-       "Range-tree baseline (Framework III): budgeted full-cache + prefetch sample-cache"},
-
       // RS-over-SRJ baseline (ported third_party implementation) — sampling-only
-      {Method::RSOverSRJ, Variant::Sampling, "rs_over_srj/sampling",
+      {Method::RSOverSRJ, Variant::Sampling, "kd_tree/sampling",
        "RS-over-SRJ KDS baseline: 4D embedding KD-tree with exact COUNT + conditional SAMPLE"},
   };
 

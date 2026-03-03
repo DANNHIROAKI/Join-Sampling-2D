@@ -64,7 +64,6 @@
     ],
     "method": [
       "ours",
-      "range_tree",
       "kd_tree"
     ],
     "variant": [
@@ -78,7 +77,7 @@
     "summary": "sweep_summary.csv"
   },
   "meta": {
-    "note": "Sweep sample size t with a fixed synthetic dataset. Keep alpha moderate so EnumSampling stays feasible.\n\n[compat] This repo build supports method: ours | range_tree | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
+    "note": "Sweep sample size t with a fixed synthetic dataset. Keep alpha moderate so EnumSampling stays feasible.\n\n[compat] This repo build supports method: ours | kd_tree. Note: kd_tree only implements the 'sampling' variant; other variants will be reported as unsupported/skipped by sjs_sweep.",
     "unsupported_methods_removed_from_sweep_method": [
       "aabb",
       "interval_tree",

@@ -299,7 +299,7 @@ inline void PrintUsage() {
   std::cerr
       << "sjs_run: single experiment runner\n\n"
       << "Common flags:\n"
-      << "  --method=<ours|range_tree>\n"
+      << "  --method=<ours|range_tree|rs_over_srj>\n"
       << "  --variant=<sampling|enum_sampling|adaptive>\n"
       << "  --t=<num_samples>\n"
       << "  --seed=<seed>           (base seed; repeats add +rep)\n"

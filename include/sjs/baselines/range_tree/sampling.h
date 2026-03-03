@@ -34,7 +34,7 @@
 // tree (k = 2*(Dim-1)) has very high memory overhead. For now, we keep this
 // baseline restricted to Dim==2 (K==2). To extend later:
 //   - Add ActiveRangeTree<K> specializations for K>2,
-//   - Or swap to a different orthogonal sampler (e.g., kd-tree) for K>2.
+//   - Or swap to a different orthogonal sampler for K>2.
 
 #include "sjs/baselines/baseline_api.h"
 #include "sjs/core/assert.h"

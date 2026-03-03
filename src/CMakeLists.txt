@@ -50,6 +50,7 @@ target_compile_features(sjs PUBLIC cxx_std_17)
 # Note: baseline_factory_2d.h is intentionally under src/.
 target_include_directories(sjs
   PUBLIC
+    "${SJS_ROOT_DIR}"
     "${SJS_ROOT_DIR}/include"
     "${SJS_ROOT_DIR}/src"
 )
@@ -72,4 +73,3 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(sjs PUBLIC stdc++fs)
   endif()
 endif()
-

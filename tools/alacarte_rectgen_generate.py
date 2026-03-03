@@ -2,7 +2,7 @@
 """tools/alacarte_rectgen_generate.py
 
 Generate controllable output-density synthetic axis-aligned hyper-rectangles
-using the local `Alacarte/alacarte_rectgen.py` source in this repository, then
+using the local `third_party/Alacarte/alacarte_rectgen.py` source in this repository, then
 export to the SJS-HighDims binary format (SJSBOX v1).
 
 This is meant to be the *single source of truth* for synthetic dataset
@@ -267,14 +267,14 @@ def _load_local_alacarte(module_override: str = ""):
 
     Priority:
       1) --alacarte_module (explicit override)
-      2) <repo_root>/Alacarte/alacarte_rectgen.py (default)
+      2) <repo_root>/third_party/Alacarte/alacarte_rectgen.py (default)
     """
     mod_path: Optional[Path] = None
     if module_override:
         mod_path = Path(module_override).expanduser().resolve()
     else:
-        # tools/alacarte_rectgen_generate.py -> repo root -> Alacarte/alacarte_rectgen.py
-        mod_path = (Path(__file__).resolve().parent.parent / "Alacarte" / "alacarte_rectgen.py").resolve()
+        # tools/alacarte_rectgen_generate.py -> repo root -> third_party/Alacarte/alacarte_rectgen.py
+        mod_path = (Path(__file__).resolve().parent.parent / "third_party" / "Alacarte" / "alacarte_rectgen.py").resolve()
 
     if not mod_path.exists():
         raise FileNotFoundError(f"Local Alacarte module not found: {mod_path}")
@@ -317,7 +317,7 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
         "--alacarte_module",
         type=str,
         default="",
-        help="override path to local Alacarte/alacarte_rectgen.py",
+        help="override path to local third_party/Alacarte/alacarte_rectgen.py",
     )
 
     # Optional CSV export (debug only).
@@ -361,7 +361,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         ar, alacarte_module_path = _load_local_alacarte(args.alacarte_module)
     except Exception as ex:
         _eprint("[rectgen][FATAL] Failed to load local Alacarte module.")
-        _eprint("Expected source file: <repo>/Alacarte/alacarte_rectgen.py")
+        _eprint("Expected source file: <repo>/third_party/Alacarte/alacarte_rectgen.py")
         _eprint(f"Load error: {ex}")
         return 2
 

@@ -20,8 +20,7 @@
 #include "sjs/baselines/range_tree/enum_sampling.h"
 #include "sjs/baselines/range_tree/sampling.h"
 
-// Comparison method 2 (SJS v3 Ch.5): kd-tree on 2d-dimensional embedding.
-#include "sjs/baselines/kd_tree/sampling.h"
+#include "third_party/RS-over-SRJ/isrjs_kds/isrjs_kds.hpp"
 
 #include <sstream>
 
@@ -76,10 +75,10 @@ std::unique_ptr<IBaseline<2, Scalar>> CreateBaseline2D(Method method,
       }
       break;
 
-    case Method::KDTree:
+    case Method::RSOverSRJ:
       switch (variant) {
         case Variant::Sampling:
-          return std::make_unique<kd_tree::KDTree2DRangeSamplingBaseline<2, Scalar>>();
+          return std::make_unique<rs_over_srj::RSOverSRJKDTreeSamplingBaseline<2, Scalar>>();
         default:
           break;
       }

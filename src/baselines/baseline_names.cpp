@@ -37,9 +37,9 @@ Span<const BaselineSpec2D> BaselineRegistry2D() noexcept {
       {Method::RangeTree, Variant::Adaptive, "range_tree/adaptive",
        "Range-tree baseline (Framework III): budgeted full-cache + prefetch sample-cache"},
 
-      // KD-tree baseline (comparison method 2, SJS v3 Ch.5) — sampling-only
-      {Method::KDTree, Variant::Sampling, "kd_tree/sampling",
-       "KD-tree on 2d-dimensional embedding: exact COUNT + range SAMPLE join (sampling only)"},
+      // RS-over-SRJ baseline (ported third_party implementation) — sampling-only
+      {Method::RSOverSRJ, Variant::Sampling, "rs_over_srj/sampling",
+       "RS-over-SRJ KDS baseline: 4D embedding KD-tree with exact COUNT + conditional SAMPLE"},
   };
 
   return Span<const BaselineSpec2D>(kReg, sizeof(kReg) / sizeof(kReg[0]));

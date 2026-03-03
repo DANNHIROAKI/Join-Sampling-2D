@@ -2,7 +2,7 @@
 // sjs/data/synthetic/alacarte_rectgen.h
 //
 // Synthetic dataset generator backed by the local Alacarte source tree
-// (Alacarte/alacarte_rectgen.py) in this repository.
+// (third_party/Alacarte/alacarte_rectgen.py) in this repository.
 //
 // Motivation
 // ----------
@@ -31,7 +31,7 @@
 //   - rectgen_script  : Path to tools/alacarte_rectgen_generate.py
 //                      (default: env SJS_ALACARTE_RECTGEN_SCRIPT or
 //                       "tools/alacarte_rectgen_generate.py")
-//   - alacarte_module : Path to Alacarte/alacarte_rectgen.py
+//   - alacarte_module : Path to third_party/Alacarte/alacarte_rectgen.py
 //                      (default: env SJS_ALACARTE_MODULE or
 //                       resolved from rectgen_script location)
 //   - audit_pairs     : u64 number of pairs for pair-sampling audit (default 2,000,000)
@@ -291,7 +291,7 @@ class AlacarteRectGenGenerator final : public ISyntheticGenerator<Dim, T> {
     if (rc != 0) {
       detail::SetErr(err,
                      "AlacarteRectGenGenerator: python generator failed rc=" + std::to_string(rc) +
-                     ". Ensure local Alacarte source is available (Alacarte/alacarte_rectgen.py) "
+                     ". Ensure local Alacarte source is available (third_party/Alacarte/alacarte_rectgen.py) "
                      "or set spec.params['alacarte_module'] / env SJS_ALACARTE_MODULE.");
       if (!keep_files) {
         std::error_code ec;

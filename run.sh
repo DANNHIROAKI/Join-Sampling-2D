@@ -286,7 +286,7 @@ GEN_SEED="${GEN_SEED:-1}"
 # Generator
 GEN="${GEN:-alacarte_rectgen}"
 RECTGEN_BASE_SCRIPT="${RECTGEN_BASE_SCRIPT:-$ROOT/tools/alacarte_rectgen_generate.py}"
-ALACARTE_MODULE="${ALACARTE_MODULE:-$ROOT/Alacarte/alacarte_rectgen.py}"
+ALACARTE_MODULE="${ALACARTE_MODULE:-$ROOT/third_party/Alacarte/alacarte_rectgen.py}"
 AUDIT_PAIRS="${AUDIT_PAIRS:-2000000}"
 AUDIT_SEED="${AUDIT_SEED:-$GEN_SEED}"
 

@@ -1,10 +1,10 @@
-Start testing: Mar 03 17:37 UTC
+Start testing: Mar 04 03:14 UTC
 ----------------------------------------------------------
 1/6 Testing: sjs_test_geometry
 1/6 Test: sjs_test_geometry
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_geometry"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_geometry" start time: Mar 03 17:37 UTC
+"sjs_test_geometry" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] test_geometry
@@ -12,7 +12,7 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_geometry" end time: Mar 03 17:37 UTC
+"sjs_test_geometry" end time: Mar 04 03:14 UTC
 "sjs_test_geometry" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -20,7 +20,7 @@ Test Passed.
 2/6 Test: sjs_test_event_sweep
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_event_sweep"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_event_sweep" start time: Mar 03 17:37 UTC
+"sjs_test_event_sweep" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] test_event_sweep
@@ -28,7 +28,7 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_event_sweep" end time: Mar 03 17:37 UTC
+"sjs_test_event_sweep" end time: Mar 04 03:14 UTC
 "sjs_test_event_sweep" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -36,7 +36,7 @@ Test Passed.
 3/6 Test: sjs_test_join_oracle
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_join_oracle"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_join_oracle" start time: Mar 03 17:37 UTC
+"sjs_test_join_oracle" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] test_join_oracle
@@ -44,7 +44,7 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_join_oracle" end time: Mar 03 17:37 UTC
+"sjs_test_join_oracle" end time: Mar 04 03:14 UTC
 "sjs_test_join_oracle" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -52,7 +52,7 @@ Test Passed.
 4/6 Test: sjs_test_sampling_quality
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_sampling_quality"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_sampling_quality" start time: Mar 03 17:37 UTC
+"sjs_test_sampling_quality" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] test_sampling_quality
@@ -60,7 +60,7 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_sampling_quality" end time: Mar 03 17:37 UTC
+"sjs_test_sampling_quality" end time: Mar 04 03:14 UTC
 "sjs_test_sampling_quality" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -68,7 +68,7 @@ Test Passed.
 5/6 Test: sjs_test_baselines_smoke
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_baselines_smoke"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_baselines_smoke" start time: Mar 03 17:37 UTC
+"sjs_test_baselines_smoke" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] baseline ours/sampling
@@ -79,7 +79,7 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_baselines_smoke" end time: Mar 03 17:37 UTC
+"sjs_test_baselines_smoke" end time: Mar 04 03:14 UTC
 "sjs_test_baselines_smoke" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -87,7 +87,7 @@ Test Passed.
 6/6 Test: sjs_test_write_results
 Command: "/home/dhy/PhD/Join-Sampling-2D/build/tests/sjs_test_write_results"
 Directory: /home/dhy/PhD/Join-Sampling-2D/build/tests
-"sjs_test_write_results" start time: Mar 03 17:37 UTC
+"sjs_test_write_results" start time: Mar 04 03:14 UTC
 Output:
 ----------------------------------------------------------
 [OK] test_write_results
@@ -95,8 +95,8 @@ Output:
 Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"sjs_test_write_results" end time: Mar 03 17:37 UTC
+"sjs_test_write_results" end time: Mar 04 03:14 UTC
 "sjs_test_write_results" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Mar 03 17:37 UTC
+End testing: Mar 04 03:14 UTC

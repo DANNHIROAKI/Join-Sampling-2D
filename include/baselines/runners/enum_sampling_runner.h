@@ -35,13 +35,18 @@ bool RunEnumSamplingOnce(IBaseline<Dim, T>* baseline,
                          const Config& cfg,
                          u64 seed,
                          RunReport* out,
-                         std::string* err = nullptr) {
+                         std::string* err = nullptr,
+                         RunnerReusePolicy policy = RunnerReusePolicy{}) {
   if (!baseline) {
     if (err) *err = "RunEnumSamplingOnce: baseline is null";
     return false;
   }
   if (!out) {
     if (err) *err = "RunEnumSamplingOnce: out is null";
+    return false;
+  }
+  if (!policy.build_before_run && policy.reset_before_run) {
+    if (err) *err = "RunEnumSamplingOnce: invalid RunnerReusePolicy (reset=true with build=false)";
     return false;
   }
 
@@ -72,9 +77,9 @@ bool RunEnumSamplingOnce(IBaseline<Dim, T>* baseline,
   Rng rng_count(DeriveSeed(seed, 1));
   Rng rng_sample(DeriveSeed(seed, 2));
 
-  baseline->Reset();
+  if (policy.reset_before_run) baseline->Reset();
 
-  {
+  if (policy.build_before_run) {
     auto _ = out->phases.Scoped("run_build");
     if (!baseline->Build(dataset, cfg, &out->phases, &local_err)) {
       out->error = local_err;
@@ -90,6 +95,11 @@ bool RunEnumSamplingOnce(IBaseline<Dim, T>* baseline,
       if (err) *err = local_err;
       return false;
     }
+  }
+  if (!out->count.exact) {
+    out->error = "RunEnumSamplingOnce: EnumSampling requires exact count/materialization";
+    if (err) *err = out->error;
+    return false;
   }
 
   {
@@ -109,6 +119,19 @@ bool RunEnumSamplingOnce(IBaseline<Dim, T>* baseline,
       if (err) *err = out->error;
       return false;
     }
+  }
+
+  const u64 rounded_count = out->count.RoundedU64();
+  if (rounded_count == 0ULL && !out->samples.Empty()) {
+    out->error = "RunEnumSamplingOnce: baseline returned non-empty samples on empty join";
+    if (err) *err = out->error;
+    return false;
+  }
+  if (rounded_count > 0ULL &&
+      out->samples.Size() != static_cast<usize>(cfg.run.t)) {
+    out->error = "RunEnumSamplingOnce: baseline returned sample size != t on non-empty join";
+    if (err) *err = out->error;
+    return false;
   }
 
   // Populate a few convenience fields.

@@ -1,0 +1,12 @@
+[2026-03-04T08:16:52+00:00][run.sh][task] start task_id=A_alpha__F0__n1000000__a100__t10000000__kd_tree__sampling sweep=A_alpha family=F0 N=1000000 alpha=100 t=10000000 method=kd_tree variant=sampling attempt=0
+[2026-03-04T08:16:52+00:00][run.sh][task] cmd=/home/dhy/PhD/Join-Sampling-2D/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=kd_tree --variant=sampling --t=10000000 --seed=1 --repeats=3 --repeat_protocol=shared_build --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a100__t10000000__kd_tree__sampling --results_file=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a100__t10000000__kd_tree__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-04 08:16:52.929 [INFO] Loaded dataset: d2_F0_n1000000_a100_gs1 R= 1000000 S= 1000000
+2026-03-04 08:16:52.929 [INFO] Baseline: kd_tree_sampling method= kd_tree variant= sampling
+2026-03-04 08:16:52.929 [INFO] Repeat protocol: shared_build
+2026-03-04 08:17:08.220 [INFO] Run ok (rep= 0 ) wall_ms= 15290.9 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-04 08:17:17.613 [INFO] Run ok (rep= 1 ) wall_ms= 9390.26 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-04 08:17:27.027 [INFO] Run ok (rep= 2 ) wall_ms= 9411.54 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-04 08:17:27.029 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":11364.2,"stdev":3400.61,"sem":1963.34,"min":9390.26,"max":15290.9,"median":9411.54,"p90":14115,"p95":14703,"p99":15173.3}
+2026-03-04 08:17:27.029 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":11364.2,"stdev":3400.61,"sem":1963.34,"min":9390.26,"max":15290.9,"median":9411.54,"p90":14115,"p95":14703,"p99":15173.3} ok_rate= 1
+2026-03-04 08:17:27.029 [INFO] Wrote results to: /home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a100__t10000000__kd_tree__sampling/run.csv
+[2026-03-04T08:17:27+00:00][run.sh][task] end task_id=A_alpha__F0__n1000000__a100__t10000000__kd_tree__sampling rc=0

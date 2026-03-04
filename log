@@ -1,0 +1,2 @@
+nohup: ignoring input
+[2026-03-04T08:15:42+00:00][run.sh][WARN] RUN_LOG_DIR exists but is not a directory: /home/dhy/PhD/Join-Sampling-2D/log; fallback to: /home/dhy/PhD/Join-Sampling-2D/run/log

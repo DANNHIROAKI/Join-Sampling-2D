@@ -169,6 +169,12 @@ class RSOverSRJKDTreeSamplingBaseline final : public IBaseline<Dim, T> {
       return false;
     }
 
+    // Exact per-r weights are deterministic once Build() is fixed; re-use.
+    if (weights_valid_) {
+      *out = MakeExactCount(W_);
+      return true;
+    }
+
     auto scoped = phases ? phases->Scoped("phase1_count") : PhaseRecorder::ScopedPhase(nullptr, "");
 
     if (ds_->R.Size() == 0 || ds_->S.Size() == 0) {

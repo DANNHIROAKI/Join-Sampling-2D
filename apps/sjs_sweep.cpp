@@ -114,6 +114,49 @@ inline bool IsHelpRequested(const sjs::ArgMap& args) {
   return args.Has("help") || args.Has("h") || args.Has("-h") || args.Has("--help");
 }
 
+enum class RepeatProtocol : sjs::u8 {
+  FullE2E = 0,
+  SharedBuild = 1,
+};
+
+inline std::string_view ToString(RepeatProtocol p) {
+  switch (p) {
+    case RepeatProtocol::FullE2E: return "full_e2e";
+    case RepeatProtocol::SharedBuild: return "shared_build";
+  }
+  return "full_e2e";
+}
+
+inline bool ParseRepeatProtocol(const sjs::Config& cfg,
+                                RepeatProtocol* out,
+                                std::string* err) {
+  if (!out) {
+    SetErr(err, "ParseRepeatProtocol: out is null");
+    return false;
+  }
+  *out = RepeatProtocol::FullE2E;
+
+  auto it = cfg.run.extra.find("repeat_protocol");
+  if (it == cfg.run.extra.end() || it->second.empty()) return true;
+
+  const std::string& v = it->second;
+  if (sjs::detail::EqualsIgnoreCase(v, "full_e2e") ||
+      sjs::detail::EqualsIgnoreCase(v, "full") ||
+      sjs::detail::EqualsIgnoreCase(v, "strict")) {
+    *out = RepeatProtocol::FullE2E;
+    return true;
+  }
+  if (sjs::detail::EqualsIgnoreCase(v, "shared_build") ||
+      sjs::detail::EqualsIgnoreCase(v, "reuse_build") ||
+      sjs::detail::EqualsIgnoreCase(v, "amortized")) {
+    *out = RepeatProtocol::SharedBuild;
+    return true;
+  }
+
+  SetErr(err, "Unknown repeat_protocol='" + v + "' (use full_e2e|shared_build)");
+  return false;
+}
+
 inline bool EnsureDir(const fs::path& p, std::string* err) {
   try {
     if (p.empty()) return true;
@@ -1065,6 +1108,8 @@ inline void PrintUsage() {
       << "  --out_dir=<dir>                 (overrides base.output.out_dir)\n"
       << "  --raw_file=<path>               (overrides files.raw)\n"
       << "  --summary_file=<path>           (overrides files.summary)\n\n"
+      << "Run extra (optional):\n"
+      << "  --repeat_protocol=<full_e2e|shared_build>  (default: full_e2e)\n\n"
       << "Baselines supported in this build (Dim=2):\n"
       << sjs::baselines::BaselineHelp2D()
       << "\n";
@@ -1126,10 +1171,18 @@ sjs::apps::ResolveDatasetPathsFromSweep(fs::path(sweep_path), &spec.base);
   }
   sjs::Logger::Instance().SetConfig(spec.base.logging);
 
+  sjs::apps::RepeatProtocol repeat_protocol = sjs::apps::RepeatProtocol::FullE2E;
+  if (!sjs::apps::ParseRepeatProtocol(spec.base, &repeat_protocol, &err)) {
+    SJS_LOG_ERROR(err);
+    return 4;
+  }
+
   if (spec.base.dataset.dim != 2) {
     SJS_LOG_ERROR("This build currently supports only Dim=2. Got --dim=", spec.base.dataset.dim);
     return 4;
   }
+
+  SJS_LOG_INFO("Repeat protocol: ", sjs::apps::ToString(repeat_protocol));
 
   // Output files.
   const fs::path out_dir(spec.base.output.out_dir);
@@ -1264,7 +1317,9 @@ sjs::apps::ResolveDatasetPathsFromSweep(fs::path(sweep_path), &spec.base);
 
                   const double nan = std::numeric_limits<double>::quiet_NaN();
                   const std::string err_one_line = sjs::apps::FirstLine(b_err);
-                  const std::string note = "unsupported baseline (skipped)";
+                  const std::string note =
+                      "unsupported baseline (skipped);repeat_protocol=" +
+                      std::string(sjs::apps::ToString(repeat_protocol));
 
                   // Emit one raw row per would-have-been repeat/seed so downstream
                   // scripts can see the failure.
@@ -1331,6 +1386,7 @@ sjs::apps::ResolveDatasetPathsFromSweep(fs::path(sweep_path), &spec.base);
                 count_vals.reserve(seeds.size());
                 u64 exact_count = 0;
                 u64 ok_in_group = 0;
+                bool reuse_ready = false;
 
                 for (usize i = 0; i < seeds.size(); ++i) {
                   const u64 seed = seeds[i];
@@ -1339,14 +1395,19 @@ sjs::apps::ResolveDatasetPathsFromSweep(fs::path(sweep_path), &spec.base);
 
                   sjs::Stopwatch sw;
                   bool ok = false;
+                  sjs::baselines::RunnerReusePolicy policy;
+                  if (repeat_protocol == sjs::apps::RepeatProtocol::SharedBuild && reuse_ready) {
+                    policy.reset_before_run = false;
+                    policy.build_before_run = false;
+                  }
                   switch (variant) {
                     case sjs::Variant::Sampling:
                       ok = sjs::baselines::RunSamplingOnce<2, sjs::Scalar>(
-                          baseline.get(), ds, cfg, seed, &rep_out, &local_err);
+                          baseline.get(), ds, cfg, seed, &rep_out, &local_err, policy);
                       break;
                     case sjs::Variant::EnumSampling:
                       ok = sjs::baselines::RunEnumSamplingOnce<2, sjs::Scalar>(
-                          baseline.get(), ds, cfg, seed, &rep_out, &local_err);
+                          baseline.get(), ds, cfg, seed, &rep_out, &local_err, policy);
                       break;
                     case sjs::Variant::Adaptive:
                       ok = false;
@@ -1365,10 +1426,18 @@ sjs::apps::ResolveDatasetPathsFromSweep(fs::path(sweep_path), &spec.base);
                   if (!ok) {
                     rep_out.ok = false;
                     rep_out.error = local_err;
+                    reuse_ready = false;
                   } else {
                     ok_runs++;
                     ok_in_group++;
                     if (rep_out.count.exact) exact_count++;
+                    reuse_ready = true;
+                  }
+
+                  if (!rep_out.note.empty()) rep_out.note.push_back(';');
+                  rep_out.note += "repeat_protocol=" + std::string(sjs::apps::ToString(repeat_protocol));
+                  if (!policy.build_before_run) {
+                    rep_out.note += ";reuse_build=1";
                   }
 
                   // Raw row.

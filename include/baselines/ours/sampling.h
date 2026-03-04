@@ -209,7 +209,6 @@ class RangePointSegTree {
     SJS_DASSERT(rng != nullptr);
     SJS_DASSERT(out != nullptr);
     out->clear();
-    out->reserve(k);
 
     if (k == 0) return true;
 
@@ -241,6 +240,22 @@ class RangePointSegTree {
 
     if (total == 0 || nz == 0) return false;
 
+    out->resize(k);
+
+    if (nz == 1) {
+      const auto& bucket = nodes_[nodes[0]].items;
+      SJS_DASSERT(!bucket.empty());
+      if (bucket.size() == 1) {
+        std::fill(out->begin(), out->end(), bucket[0].handle);
+      } else {
+        const u32 bsz = static_cast<u32>(bucket.size());
+        for (u32 i = 0; i < k; ++i) {
+          (*out)[i] = bucket[rng->UniformU32(bsz)].handle;
+        }
+      }
+      return true;
+    }
+
     for (u32 i = 0; i < k; ++i) {
       const u64 x = rng->UniformU64(total);  // in [0,total)
       u64 cum = 0;
@@ -255,7 +270,7 @@ class RangePointSegTree {
       const auto& bucket = nodes_[node].items;
       SJS_DASSERT(!bucket.empty());
       const u32 pos = rng->UniformU32(static_cast<u32>(bucket.size()));
-      out->push_back(bucket[pos].handle);
+      (*out)[i] = bucket[pos].handle;
     }
     return true;
   }
@@ -502,7 +517,6 @@ class StabbingSegTree {
     SJS_DASSERT(rng != nullptr);
     SJS_DASSERT(out != nullptr);
     out->clear();
-    out->reserve(k);
 
     if (k == 0) return true;
     if (m_ == 0 || q >= m_) return false;
@@ -528,6 +542,22 @@ class StabbingSegTree {
 
     if (total == 0 || n == 0) return false;
 
+    out->resize(k);
+
+    if (n == 1) {
+      const auto& bucket = nodes_[path_nodes[0]].items;
+      SJS_DASSERT(!bucket.empty());
+      if (bucket.size() == 1) {
+        std::fill(out->begin(), out->end(), bucket[0].handle);
+      } else {
+        const u32 bsz = static_cast<u32>(bucket.size());
+        for (u32 i = 0; i < k; ++i) {
+          (*out)[i] = bucket[rng->UniformU32(bsz)].handle;
+        }
+      }
+      return true;
+    }
+
     for (u32 i = 0; i < k; ++i) {
       const u64 x = rng->UniformU64(total);
       u64 cum = 0;
@@ -542,7 +572,7 @@ class StabbingSegTree {
       const auto& bucket = nodes_[node].items;
       SJS_DASSERT(!bucket.empty());
       const u32 pos = rng->UniformU32(static_cast<u32>(bucket.size()));
-      out->push_back(bucket[pos].handle);
+      (*out)[i] = bucket[pos].handle;
     }
     return true;
   }
@@ -1211,6 +1241,12 @@ class OursSamplingBaseline final : public IBaseline<Dim, T> {
     if (!built_ || !ctx_.built() || ctx_.dataset() == nullptr) {
       if (err) *err = "OursSamplingBaseline::Count: call Build() first";
       return false;
+    }
+
+    // Weight computation is deterministic for a fixed built dataset; re-use.
+    if (weights_valid_) {
+      if (out) *out = MakeExactCount(W_);
+      return true;
     }
 
     auto scoped = phases ? phases->Scoped("phase1_count") : PhaseRecorder::ScopedPhase(nullptr, "");

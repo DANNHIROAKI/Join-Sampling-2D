@@ -25,14 +25,16 @@ template bool RunSamplingOnce<2, Scalar>(IBaseline<2, Scalar>* baseline,
                                         const Config& cfg,
                                         u64 seed,
                                         RunReport* out,
-                                        std::string* err);
+                                        std::string* err,
+                                        RunnerReusePolicy policy);
 
 template bool RunEnumSamplingOnce<2, Scalar>(IBaseline<2, Scalar>* baseline,
                                             const Dataset<2, Scalar>& dataset,
                                             const Config& cfg,
                                             u64 seed,
                                             RunReport* out,
-                                            std::string* err);
+                                            std::string* err,
+                                            RunnerReusePolicy policy);
 
 }  // namespace baselines
 }  // namespace sjs

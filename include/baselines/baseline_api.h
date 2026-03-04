@@ -272,5 +272,12 @@ struct RunReport {
   std::string note;
 };
 
+// Runner-level protocol controls.
+// Default is the strict full end-to-end path: Reset -> Build -> Count -> Sample.
+struct RunnerReusePolicy {
+  bool reset_before_run = true;
+  bool build_before_run = true;
+};
+
 }  // namespace baselines
 }  // namespace sjs

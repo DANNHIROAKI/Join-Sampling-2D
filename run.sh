@@ -29,6 +29,7 @@
 #   THREADS=1
 #   REPEATS=3
 #   SEED=1
+#   REPEAT_PROTOCOL=full_e2e|shared_build
 #
 #   # 数据生成（Alacarte-rectgen）
 #   PYTHON=python3
@@ -54,6 +55,7 @@
 #
 #   # 输出/保留
 #   RUN_LOG_TO_STDOUT=0
+#   RUN_LOG_DIR=/path/to/log/dir
 #   RESULT_COPY_DATASETS=0
 #   PRUNE_TEMP_DATASETS=1
 #
@@ -271,6 +273,10 @@ CLEAN_TEMP="${CLEAN_TEMP:-0}"
 THREADS="${THREADS:-1}"
 REPEATS="${REPEATS:-3}"
 SEED="${SEED:-1}"
+# Repeat protocol:
+#   full_e2e     : each repeat does reset+build+count+sample (strict baseline)
+#   shared_build : first repeat builds; later repeats reuse built state
+REPEAT_PROTOCOL="${REPEAT_PROTOCOL:-shared_build}"
 
 PYTHON="${PYTHON:-python3}"
 GEN_SEED="${GEN_SEED:-1}"
@@ -328,6 +334,7 @@ T_LARGE_THRESHOLD="${T_LARGE_THRESHOLD:-30000000}"
 
 # Logging + retention
 RUN_LOG_TO_STDOUT="${RUN_LOG_TO_STDOUT:-0}"
+RUN_LOG_DIR="${RUN_LOG_DIR:-${ROOT}/log}"
 RESULT_COPY_DATASETS="${RESULT_COPY_DATASETS:-0}"
 PRUNE_TEMP_DATASETS="${PRUNE_TEMP_DATASETS:-1}"
 
@@ -383,12 +390,17 @@ DATA_LOG_ROOT="${TEMP_ROOT}/dataset_logs"
 PRESET_DIR="${TEMP_ROOT}/rectgen_presets"
 
 RESULT_ROOT="${ROOT}/results/raw/${EXP_TAG}"
-RUN_LOG_DIR="${ROOT}/log"
 RUN_LOG_STAMP="$(date +%Y%m%d_%H%M%S)"
-RUN_LOG_FILE="${RUN_LOG_DIR}/run_${EXP_TAG}_${RUN_LOG_STAMP}_pid$$.log"
+RUN_LOG_FILE=""
 
 setup_run_logger() {
+  if [[ -e "$RUN_LOG_DIR" && ! -d "$RUN_LOG_DIR" ]]; then
+    local fallback_dir="${ROOT}/run/log"
+    warn "RUN_LOG_DIR exists but is not a directory: ${RUN_LOG_DIR}; fallback to: ${fallback_dir}"
+    RUN_LOG_DIR="$fallback_dir"
+  fi
   mkdir -p "$RUN_LOG_DIR"
+  RUN_LOG_FILE="${RUN_LOG_DIR}/run_${EXP_TAG}_${RUN_LOG_STAMP}_pid$$.log"
   if [[ "$RUN_LOG_TO_STDOUT" == "1" ]]; then
     exec > >(tee -a "$RUN_LOG_FILE") 2>&1
   else
@@ -471,6 +483,7 @@ PAR_D="${PAR_D:-$MAX_PARALLEL}"
 log "Host: nproc=$NPROC, mem~${MEM_GB}GB"
 log "Parallelism: max=$MAX_PARALLEL (A=$PAR_A, B_small=$PAR_B_SMALL, B_large=$PAR_B_LARGE, C_small=$PAR_C_SMALL, C_large=$PAR_C_LARGE, D=$PAR_D)"
 log "Enum: cap=$ENUM_CAP, precheck=$ENUM_PRECHECK"
+log "Repeat protocol: $REPEAT_PROTOCOL"
 
 # ----------------------------
 # Build run signature (for resumability)
@@ -482,6 +495,7 @@ build_run_signature() {
     echo "threads=$THREADS"
     echo "repeats=$REPEATS"
     echo "seed=$SEED"
+    echo "repeat_protocol=$REPEAT_PROTOCOL"
 
     echo "python=$PYTHON"
     echo "gen_seed=$GEN_SEED"
@@ -1035,6 +1049,7 @@ run_one_task() {
     "--t=$t"
     "--seed=$SEED"
     "--repeats=$REPEATS"
+    "--repeat_protocol=$REPEAT_PROTOCOL"
     "--threads=$THREADS"
     "--enum_cap=$ENUM_CAP"
     "--write_samples=0"
@@ -1585,6 +1600,7 @@ def summarize(vals):
     return mean, med, cv, len(vals)
 
 out_path = out_dir / 'summary_stats.csv'
+summary_rows = {}
 with out_path.open('w', newline='') as f:
     fieldnames = [
         'sweep','family','N','alpha','t','method','variant',
@@ -1671,6 +1687,7 @@ with out_path.open('w', newline='') as f:
             out_row['ns_per_sample_cv'] = cv
 
         w.writerow(out_row)
+        summary_rows[key] = dict(out_row)
 
 # also write a compact NR/FAIL list (ok_reps==0)
 fail_path = out_dir / 'summary_not_ok.csv'
@@ -1684,6 +1701,42 @@ with fail_path.open('w', newline='') as f:
 
 print(f"[summary] wrote: {out_path}")
 print(f"[summary] wrote: {fail_path}")
+
+# Fair-comparison view: keep only cases where all core models are fully OK.
+core_models = [
+    ("ours", "enum_sampling"),
+    ("ours", "sampling"),
+    ("kd_tree", "sampling"),
+]
+
+matched_path = out_dir / 'summary_matched_ok.csv'
+with matched_path.open('w', newline='') as f:
+    if summary_rows:
+        fieldnames = list(next(iter(summary_rows.values())).keys())
+    else:
+        fieldnames = [
+            'sweep','family','N','alpha','t','method','variant',
+            'ok_reps','total_reps','status',
+        ]
+    w = csv.DictWriter(f, fieldnames=fieldnames)
+    w.writeheader()
+
+    cases = defaultdict(dict)
+    for key, row in summary_rows.items():
+        sweep, fam, N, alpha, t, method, variant = key
+        case_key = (sweep, fam, N, alpha, t)
+        cases[case_key][(method, variant)] = row
+
+    for case_key in sorted(cases.keys()):
+        mv_map = cases[case_key]
+        if not all(mv in mv_map for mv in core_models):
+            continue
+        if any((mv_map[mv].get('status') != 'OK') for mv in core_models):
+            continue
+        for mv in core_models:
+            w.writerow(mv_map[mv])
+
+print(f"[summary] wrote: {matched_path}")
 PY
 
 # ----------------------------
@@ -1698,6 +1751,7 @@ PY
   echo "threads=$THREADS"
   echo "repeats=$REPEATS"
   echo "seed=$SEED"
+  echo "repeat_protocol=$REPEAT_PROTOCOL"
   echo "python=$PYTHON"
   echo "gen_seed=$GEN_SEED"
   echo "audit_pairs=$AUDIT_PAIRS"
@@ -1729,6 +1783,7 @@ PY
   echo "  - Per-task CSV    : $OUT_ROOT/<sweep>/<task_id>/run.csv"
   echo "  - Merged CSVs     : $MERGED_DIR/*_merged.csv"
   echo "  - Summary stats   : $SUMMARY_DIR/summary_stats.csv"
+  echo "  - Matched fair view: $SUMMARY_DIR/summary_matched_ok.csv"
   echo "  - NR list         : $GLOBAL_NR"
   echo "  - Failures list   : $GLOBAL_FAIL"
   echo "  - Dataset logs    : $DATA_LOG_ROOT/*.log"

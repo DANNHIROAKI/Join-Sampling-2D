@@ -1,0 +1,11 @@
+[2026-03-04T08:48:07+00:00][run.sh][task] start task_id=C_t__F0__n1000000__a100__t30000000__ours__sampling sweep=C_t family=F0 N=1000000 alpha=100 t=30000000 method=ours variant=sampling attempt=0
+[2026-03-04T08:48:07+00:00][run.sh][task] cmd=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=ours --variant=sampling --t=30000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t30000000__ours__sampling --results_file=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t30000000__ours__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-04 08:48:07.749 [INFO] Loaded dataset: d2_F0_n1000000_a100_gs1 R= 1000000 S= 1000000
+2026-03-04 08:48:07.749 [INFO] Baseline: ours_sampling method= ours variant= sampling
+2026-03-04 08:48:18.911 [INFO] Run ok (rep= 0 ) wall_ms= 11162.3 count= 2.01434e+08 (exact) samples= 30000000
+2026-03-04 08:48:31.373 [INFO] Run ok (rep= 1 ) wall_ms= 12452.1 count= 2.01434e+08 (exact) samples= 30000000
+2026-03-04 08:48:43.780 [INFO] Run ok (rep= 2 ) wall_ms= 12399 count= 2.01434e+08 (exact) samples= 30000000
+2026-03-04 08:48:43.789 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":12004.4,"stdev":729.813,"sem":421.358,"min":11162.3,"max":12452.1,"median":12399,"p90":12441.4,"p95":12446.7,"p99":12451}
+2026-03-04 08:48:43.789 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":12004.4,"stdev":729.813,"sem":421.358,"min":11162.3,"max":12452.1,"median":12399,"p90":12441.4,"p95":12446.7,"p99":12451} ok_rate= 1
+2026-03-04 08:48:43.789 [INFO] Wrote results to: /home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t30000000__ours__sampling/run.csv
+[2026-03-04T08:48:45+00:00][run.sh][task] end task_id=C_t__F0__n1000000__a100__t30000000__ours__sampling rc=0

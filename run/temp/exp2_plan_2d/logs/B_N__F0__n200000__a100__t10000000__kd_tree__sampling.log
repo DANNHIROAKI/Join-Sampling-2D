@@ -1,0 +1,11 @@
+[2026-03-04T08:34:40+00:00][run.sh][task] start task_id=B_N__F0__n200000__a100__t10000000__kd_tree__sampling sweep=B_N family=F0 N=200000 alpha=100 t=10000000 method=kd_tree variant=sampling attempt=0
+[2026-03-04T08:34:40+00:00][run.sh][task] cmd=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n200000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n200000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n200000_a100_gs1_S.bin --method=kd_tree --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n200000__a100__t10000000__kd_tree__sampling --results_file=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n200000__a100__t10000000__kd_tree__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-04 08:34:40.883 [INFO] Loaded dataset: d2_F0_n200000_a100_gs1 R= 200000 S= 200000
+2026-03-04 08:34:40.883 [INFO] Baseline: kd_tree_sampling method= kd_tree variant= sampling
+2026-03-04 08:34:43.669 [INFO] Run ok (rep= 0 ) wall_ms= 2785.41 count= 3.98793e+07 (exact) samples= 10000000
+2026-03-04 08:34:46.436 [INFO] Run ok (rep= 1 ) wall_ms= 2764.11 count= 3.98793e+07 (exact) samples= 10000000
+2026-03-04 08:34:49.298 [INFO] Run ok (rep= 2 ) wall_ms= 2858.62 count= 3.98793e+07 (exact) samples= 10000000
+2026-03-04 08:34:49.301 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":2802.71,"stdev":49.5768,"sem":28.6232,"min":2764.11,"max":2858.62,"median":2785.41,"p90":2843.98,"p95":2851.3,"p99":2857.16}
+2026-03-04 08:34:49.301 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":2802.71,"stdev":49.5768,"sem":28.6232,"min":2764.11,"max":2858.62,"median":2785.41,"p90":2843.98,"p95":2851.3,"p99":2857.16} ok_rate= 1
+2026-03-04 08:34:49.301 [INFO] Wrote results to: /home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n200000__a100__t10000000__kd_tree__sampling/run.csv
+[2026-03-04T08:34:49+00:00][run.sh][task] end task_id=B_N__F0__n200000__a100__t10000000__kd_tree__sampling rc=0

@@ -1,0 +1,11 @@
+[2026-03-04T08:28:28+00:00][run.sh][task] start task_id=A_alpha__F1__n1000000__a70__t10000000__ours__enum_sampling sweep=A_alpha family=F1 N=1000000 alpha=70 t=10000000 method=ours variant=enum_sampling attempt=0
+[2026-03-04T08:28:28+00:00][run.sh][task] cmd=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/sjs_run --dataset_source=binary --dataset=d2_F1_n1000000_a70_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F1/d2_F1_n1000000_a70_gs1_R.bin --path_s=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/datasets/F1/d2_F1_n1000000_a70_gs1_S.bin --method=ours --variant=enum_sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F1__n1000000__a70__t10000000__ours__enum_sampling --results_file=/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F1__n1000000__a70__t10000000__ours__enum_sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-04 08:28:29.100 [INFO] Loaded dataset: d2_F1_n1000000_a70_gs1 R= 1000000 S= 1000000
+2026-03-04 08:28:29.100 [INFO] Baseline: ours_enum+sampling method= ours variant= enum_sampling
+2026-03-04 08:28:39.955 [INFO] Run ok (rep= 0 ) wall_ms= 10855.2 count= 1.39502e+08 (exact) samples= 10000000
+2026-03-04 08:28:51.594 [INFO] Run ok (rep= 1 ) wall_ms= 11637.2 count= 1.39502e+08 (exact) samples= 10000000
+2026-03-04 08:29:02.191 [INFO] Run ok (rep= 2 ) wall_ms= 10594.7 count= 1.39502e+08 (exact) samples= 10000000
+2026-03-04 08:29:02.193 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":11029.1,"stdev":542.557,"sem":313.245,"min":10594.7,"max":11637.2,"median":10855.2,"p90":11480.8,"p95":11559,"p99":11621.6}
+2026-03-04 08:29:02.193 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":11029.1,"stdev":542.557,"sem":313.245,"min":10594.7,"max":11637.2,"median":10855.2,"p90":11480.8,"p95":11559,"p99":11621.6} ok_rate= 1
+2026-03-04 08:29:02.193 [INFO] Wrote results to: /home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F1__n1000000__a70__t10000000__ours__enum_sampling/run.csv
+[2026-03-04T08:29:02+00:00][run.sh][task] end task_id=A_alpha__F1__n1000000__a70__t10000000__ours__enum_sampling rc=0

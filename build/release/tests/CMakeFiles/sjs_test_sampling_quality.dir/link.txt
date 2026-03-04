@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_test_sampling_quality.dir/test_sampling_quality.cpp.o -o sjs_test_sampling_quality  ../src/libsjs.a -lpthread

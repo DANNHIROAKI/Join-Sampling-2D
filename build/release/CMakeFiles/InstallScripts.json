@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/cmake_install.cmake",
+		"/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/src/cmake_install.cmake",
+		"/home/dhy/PhD/Compare-304/Ver-2026.3.4-Pro/build/release/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

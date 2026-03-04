@@ -1,0 +1,17 @@
+run_signature=1034867934-852
+attempt=0
+task_id=B_N__F0__n2000000__a100__t10000000__ours__enum_sampling
+sweep=B_N
+family=F0
+dataset=d2_F0_n2000000_a100_gs1
+N=2000000
+alpha=100
+t=10000000
+method=ours
+variant=enum_sampling
+precheck_expected_J=400000000
+enum_cap=300000000
+reason=Not runnable: expected |J|≈400000000 > enum_cap=300000000 (precheck)
+path_r=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n2000000_a100_gs1_R.bin
+path_s=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n2000000_a100_gs1_S.bin
+gen_report=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n2000000_a100_gs1_gen_report.json

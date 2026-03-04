@@ -1,0 +1,11 @@
+[2026-03-03T20:01:22+00:00][run.sh][task] start task_id=C_t__F0__n1000000__a100__t300000__ours__enum_sampling sweep=C_t family=F0 N=1000000 alpha=100 t=300000 method=ours variant=enum_sampling attempt=0
+[2026-03-03T20:01:22+00:00][run.sh][task] cmd=/home/dhy/PhD/Join-Sampling-2D/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=ours --variant=enum_sampling --t=300000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t300000__ours__enum_sampling --results_file=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t300000__ours__enum_sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-03 20:01:22.669 [INFO] Loaded dataset: d2_F0_n1000000_a100_gs1 R= 1000000 S= 1000000
+2026-03-03 20:01:22.669 [INFO] Baseline: ours_enum+sampling method= ours variant= enum_sampling
+2026-03-03 20:01:33.003 [INFO] Run ok (rep= 0 ) wall_ms= 10334.1 count= 2.01434e+08 (exact) samples= 300000
+2026-03-03 20:01:43.869 [INFO] Run ok (rep= 1 ) wall_ms= 10865.3 count= 2.01434e+08 (exact) samples= 300000
+2026-03-03 20:01:54.780 [INFO] Run ok (rep= 2 ) wall_ms= 10911.1 count= 2.01434e+08 (exact) samples= 300000
+2026-03-03 20:01:54.780 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":10703.5,"stdev":320.735,"sem":185.176,"min":10334.1,"max":10911.1,"median":10865.3,"p90":10901.9,"p95":10906.5,"p99":10910.2}
+2026-03-03 20:01:54.780 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":10703.5,"stdev":320.735,"sem":185.176,"min":10334.1,"max":10911.1,"median":10865.3,"p90":10901.9,"p95":10906.5,"p99":10910.2} ok_rate= 1
+2026-03-03 20:01:54.780 [INFO] Wrote results to: /home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t300000__ours__enum_sampling/run.csv
+[2026-03-03T20:01:55+00:00][run.sh][task] end task_id=C_t__F0__n1000000__a100__t300000__ours__enum_sampling rc=0

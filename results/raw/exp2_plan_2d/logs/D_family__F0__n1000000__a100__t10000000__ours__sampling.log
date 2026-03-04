@@ -1,0 +1,11 @@
+[2026-03-03T20:08:18+00:00][run.sh][task] start task_id=D_family__F0__n1000000__a100__t10000000__ours__sampling sweep=D_family family=F0 N=1000000 alpha=100 t=10000000 method=ours variant=sampling attempt=0
+[2026-03-03T20:08:18+00:00][run.sh][task] cmd=/home/dhy/PhD/Join-Sampling-2D/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=ours --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/D_family/D_family__F0__n1000000__a100__t10000000__ours__sampling --results_file=/home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/D_family/D_family__F0__n1000000__a100__t10000000__ours__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-03 20:08:18.666 [INFO] Loaded dataset: d2_F0_n1000000_a100_gs1 R= 1000000 S= 1000000
+2026-03-03 20:08:18.666 [INFO] Baseline: ours_sampling method= ours variant= sampling
+2026-03-03 20:08:30.396 [INFO] Run ok (rep= 0 ) wall_ms= 11730.7 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-03 20:08:43.318 [INFO] Run ok (rep= 1 ) wall_ms= 12919.7 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-03 20:08:56.229 [INFO] Run ok (rep= 2 ) wall_ms= 12910.2 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-03 20:08:56.229 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":12520.2,"stdev":683.771,"sem":394.775,"min":11730.7,"max":12919.7,"median":12910.2,"p90":12917.8,"p95":12918.8,"p99":12919.5}
+2026-03-03 20:08:56.229 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":12520.2,"stdev":683.771,"sem":394.775,"min":11730.7,"max":12919.7,"median":12910.2,"p90":12917.8,"p95":12918.8,"p99":12919.5} ok_rate= 1
+2026-03-03 20:08:56.229 [INFO] Wrote results to: /home/dhy/PhD/Join-Sampling-2D/run/temp/exp2_plan_2d/out/D_family/D_family__F0__n1000000__a100__t10000000__ours__sampling/run.csv
+[2026-03-03T20:08:57+00:00][run.sh][task] end task_id=D_family__F0__n1000000__a100__t10000000__ours__sampling rc=0

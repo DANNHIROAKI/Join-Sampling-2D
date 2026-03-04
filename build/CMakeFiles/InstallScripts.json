@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/dhy/PhD/Join-Sampling-2D/build/cmake_install.cmake",
+		"/home/dhy/PhD/Join-Sampling-2D/build/src/cmake_install.cmake",
+		"/home/dhy/PhD/Join-Sampling-2D/build/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

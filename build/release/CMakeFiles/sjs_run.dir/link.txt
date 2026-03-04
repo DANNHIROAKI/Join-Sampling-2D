@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_run.dir/apps/sjs_run.cpp.o -o sjs_run  src/libsjs.a -lpthread

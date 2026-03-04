@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_gen_dataset.dir/apps/sjs_gen_dataset.cpp.o -o sjs_gen_dataset  src/libsjs.a -lpthread

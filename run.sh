@@ -1,30 +1,27 @@
 #!/usr/bin/env bash
 # run.sh (repo root)
 #
-# EXP-2* (thesis §6.6 revised): Synthetic scalability in an SJS-favorable regime
-# -----------------------------------------------------------------------------
-# This script implements the *new* experiment plan in 《新实验计划.md》:
-#   (A*) vary alpha_out   @ N=1e6,  t=1e7,   families F0+F1
-#   (B*) vary N           @ alpha=200, t=1e7, family F0 (F1 optional)
-#   (C*) vary t           @ N=1e6, alpha=200, family F0 (F1 optional)
-#   (D*) family sensitivity @ N=1e6, alpha=200, t=1e7, families F0+F1
-#   (E)  budget diagnosis @ N=1e6, alpha=200, t in {1e5,3e5}, sweep (B,w_small)
-#   (F)  high-density alpha sweep (optional)
+# 实验计划（2D）一键复现实验脚本
+# --------------------------------
+# 对齐：《实验计划-2D.md》中的四组主实验 A*~D*（以及 D* 的可选 shape_sigma 扩展）。
 #
-# Key changes vs the original run.sh:
-#   - Throughput mode defaults: t=10,000,000; TH config: B=5e7, w_small=512
-#   - Two data families (F0/F1) are supported by generating *preset* rectgen scripts
-#     without modifying repo sources.
-#   - Datasets are generated ONCE (via sjs_gen_dataset) and reused by all model runs
-#     (dataset_source=binary). This saves massive wall-clock time.
-#   - To keep the same CSV schema as synthetic runs, we patch each task's run.csv
-#     to inject the dataset's gen_report_json.
+# 主实验：
+#   (A*) alpha_out 扫描 @ N=1e6, t=1e7, families F0+F1
+#   (B*) N 扫描        @ alpha=100, t=1e7, family F0（F1 可选）
+#   (C*) t 扫描        @ N=1e6, alpha=100, family F0（F1 可选）
+#   (D*) family 敏感性 @ N=1e6, alpha=100, t=1e7, families F0+F1
+#       可选扩展：lognormal + volume_cv=1.0 固定，shape_sigma 扫描
 #
-# Usage:
+# 模型：
+#   1) KDTree          : --method=kd_tree --variant=sampling
+#   2) SJS-Enum        : --method=ours    --variant=enum_sampling   (Framework I)
+#   3) SJS-Sampling    : --method=ours    --variant=sampling        (两遍 sweep)
+#
+# 使用：
 #   chmod +x run.sh
 #   ./run.sh
 #
-# Common overrides (env vars):
+# 常用覆盖（环境变量）：
 #   BUILD_TYPE=Release|Debug|RelWithDebInfo|MinSizeRel
 #   CLEAN_BUILD=0|1
 #   CLEAN_TEMP=0|1
@@ -32,52 +29,45 @@
 #   THREADS=1
 #   REPEATS=3
 #   SEED=1
+#
+#   # 数据生成（Alacarte-rectgen）
+#   PYTHON=python3
 #   GEN_SEED=1
 #   AUDIT_PAIRS=2000000
 #   AUDIT_SEED=1
 #
-#   # Run subsets
-#   RUN_A=1 RUN_B=1 RUN_C=1 RUN_D=1 RUN_E=1 RUN_F=1
+#   # EnumSampling 安全阈值（0 表示不设 cap；注意可能 OOM）
+#   ENUM_CAP=300000000
+#   ENUM_PRECHECK=1    # 1: 若预计 |J| > ENUM_CAP，直接标记 Not runnable 而不实际枚举
+#
+#   # 子集开关
+#   RUN_A=1 RUN_B=1 RUN_C=1 RUN_D=1
 #   INCLUDE_B_F1=0
 #   INCLUDE_C_F1=0
+#   INCLUDE_ALPHA_CTRL=0   # 1: A* 额外加入 {50,150,200}
+#   RUN_D_SHAPE_SWEEP=0    # 1: 跑 D* 的 shape_sigma 扩展
 #
-#   # Framework knobs
-#   B_TH=50000000
-#   W_SMALL_TH=512
-#   BUDGETS_E="10000000 20000000 50000000 100000000"
-#   W_SMALLS_E="256 512 1024"
-#
-#   # Enum safety cap (0 disables; beware OOM for very dense joins)
-#   ENUM_CAP=0
-#
-#   # Parallelism & robustness
+#   # 并行/健壮性
 #   MAX_PARALLEL=2
 #   MAX_RETRIES=2
 #   TIMEOUT_SEC=0
 #
-#   # Parameter grids
-#   ALPHAS_A="0.1 0.3 1 3 10 30 100 300 1000"
-#   NS_B="100000 200000 500000 1000000 2000000 5000000"
-#   TS_C="1000000 3000000 10000000 30000000 100000000 300000000 1000000000"
-#   ALPHAS_F="1000 3000 10000"
-#
-#   # Logging + retention
+#   # 输出/保留
 #   RUN_LOG_TO_STDOUT=0
 #   RESULT_COPY_DATASETS=0
 #   PRUNE_TEMP_DATASETS=1
 #
-# Notes:
-#   - This repository build is Dim=2 only.
-#   - F0/F1 datasets differ ONLY by Alacarte generator parameters:
-#       F0: volume_dist=fixed,     volume_cv=0.25, shape_sigma=0.0
-#       F1: volume_dist=lognormal, volume_cv=1.0,  shape_sigma=1.0
-#   - If you are tight on RAM, consider lowering MAX_PARALLEL and/or setting ENUM_CAP.
+# 说明：
+#   - 数据集生成采用 python 脚本 tools/alacarte_rectgen_generate.py（复制为 preset，不改源码），
+#     preset 会把 Alacarte 返回的 info（含 coverage / alpha_expected_est / tune_history / seeds 等）
+#     写入 report 的 "info" 字段，方便审计。
+#   - 所有模型均复用同一份缓存数据集（dataset_source=binary）。
+#   - EnumSampling 若被 cap / OOM 等限制，会被标记为 Not runnable（.nr），不会导致整次实验失败。
 
 set -Eeuo pipefail
 IFS=$' \t\n'
 
 timestamp_now() { date -Is; }
-
 log()  { printf '[%s][run.sh][INFO] %s\n' "$(timestamp_now)" "$*"; }
 warn() { printf '[%s][run.sh][WARN] %s\n' "$(timestamp_now)" "$*" >&2; }
 fatal_handler() {
@@ -88,7 +78,7 @@ fatal_handler() {
 trap 'fatal_handler "${LINENO}" "${BASH_COMMAND}"' ERR
 
 # ----------------------------
-# Small helpers (adapted from the original run.sh)
+# Small helpers
 # ----------------------------
 
 task_count() {
@@ -222,17 +212,17 @@ csv_col_idx() {
   awk -F',' -v c="$col" 'NR==1{for(i=1;i<=NF;i++){if($i==c){print i; exit}}}' "$file"
 }
 
-csv_all_ok() {
-  local file="$1"
-  local ok_idx
-  ok_idx="$(csv_col_idx "$file" "ok")"
-  [[ -n "${ok_idx}" ]] || return 2
-  awk -F',' -v k="${ok_idx}" 'NR==1{next} {n++; if($k != 1) bad=1} END{ if(n==0) exit 3; exit(bad?1:0) }' "$file"
-}
-
 csv_row_count() {
   local file="$1"
   awk 'END{print NR-1}' "$file" 2>/dev/null || echo 0
+}
+
+csv_ok_count() {
+  local file="$1"
+  local ok_idx
+  ok_idx="$(csv_col_idx "$file" "ok")"
+  [[ -n "${ok_idx}" ]] || { echo 0; return 0; }
+  awk -F',' -v k="${ok_idx}" 'NR==1{next} {if($k==1) c++} END{print c+0}' "$file"
 }
 
 merge_csv_dir() {
@@ -270,9 +260,9 @@ dir_size_human() {
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ----------------------------
-# Parameters (defaults follow the new plan)
+# Parameters (defaults align to 实验计划-2D.md)
 # ----------------------------
-EXP_TAG="${EXP_TAG:-exp2_sjs_adv_d2}"
+EXP_TAG="${EXP_TAG:-exp2_plan_2d}"
 
 BUILD_TYPE="${BUILD_TYPE:-Release}"
 CLEAN_BUILD="${CLEAN_BUILD:-0}"
@@ -281,83 +271,78 @@ CLEAN_TEMP="${CLEAN_TEMP:-0}"
 THREADS="${THREADS:-1}"
 REPEATS="${REPEATS:-3}"
 SEED="${SEED:-1}"
-GEN_SEED="${GEN_SEED:-1}"
 
-# Generator
-GEN="${GEN:-alacarte_rectgen}"
-RECTGEN_BASE_SCRIPT="${RECTGEN_BASE_SCRIPT:-$ROOT/tools/alacarte_rectgen_generate.py}"
-ALACARTE_MODULE="${ALACARTE_MODULE:-$ROOT/third_party/Alacarte/alacarte_rectgen.py}"
+PYTHON="${PYTHON:-python3}"
+GEN_SEED="${GEN_SEED:-1}"
 AUDIT_PAIRS="${AUDIT_PAIRS:-2000000}"
 AUDIT_SEED="${AUDIT_SEED:-$GEN_SEED}"
 
-# Families (Alacarte params)
-F0_VOLUME_DIST="${F0_VOLUME_DIST:-fixed}"
-F0_VOLUME_CV="${F0_VOLUME_CV:-0.25}"
-F0_SHAPE_SIGMA="${F0_SHAPE_SIGMA:-0.0}"
-
-F1_VOLUME_DIST="${F1_VOLUME_DIST:-lognormal}"
-F1_VOLUME_CV="${F1_VOLUME_CV:-1.0}"
-F1_SHAPE_SIGMA="${F1_SHAPE_SIGMA:-1.0}"
-
-# Framework knobs
-B_TH="${B_TH:-50000000}"          # TH config: B=5e7
-W_SMALL_TH="${W_SMALL_TH:-512}"   # TH config: w_small=512
-ENUM_CAP="${ENUM_CAP:-0}"
-
-# Robustness
-MAX_RETRIES="${MAX_RETRIES:-2}"
-RETRY_BACKOFF_SEC="${RETRY_BACKOFF_SEC:-2}"
-TIMEOUT_SEC="${TIMEOUT_SEC:-0}"
-
-# Auto-parallelism (conservative defaults; adjust if you know your RAM headroom)
-MAX_PARALLEL_CAP="${MAX_PARALLEL_CAP:-8}"
-MEM_PER_TASK_GB="${MEM_PER_TASK_GB:-24}"
-MEM_RESERVE_GB="${MEM_RESERVE_GB:-8}"
+# EnumSampling safety
+ENUM_CAP="${ENUM_CAP:-300000000}"
+ENUM_PRECHECK="${ENUM_PRECHECK:-1}"
 
 # Which sweeps to run
 RUN_A="${RUN_A:-1}"
 RUN_B="${RUN_B:-1}"
 RUN_C="${RUN_C:-1}"
 RUN_D="${RUN_D:-1}"
-RUN_E="${RUN_E:-1}"
-RUN_F="${RUN_F:-1}"
 
 INCLUDE_B_F1="${INCLUDE_B_F1:-0}"
 INCLUDE_C_F1="${INCLUDE_C_F1:-0}"
+INCLUDE_ALPHA_CTRL="${INCLUDE_ALPHA_CTRL:-0}"
+RUN_D_SHAPE_SWEEP="${RUN_D_SHAPE_SWEEP:-0}"
 
 # Grids
-ALPHAS_A="${ALPHAS_A:-0.1 0.3 1 3 10 30 100 300 1000}"
+ALPHAS_A_BASE="${ALPHAS_A_BASE:-70 80 90 100 110 120 130}"
+ALPHAS_A_CTRL="${ALPHAS_A_CTRL:-50 150 200}"
 N_A="${N_A:-1000000}"
 T_A="${T_A:-10000000}"
 
 NS_B="${NS_B:-100000 200000 500000 1000000 2000000 5000000}"
-ALPHA_B="${ALPHA_B:-200}"
+ALPHA_B="${ALPHA_B:-100}"
 T_B="${T_B:-10000000}"
 
-TS_C="${TS_C:-1000000 3000000 10000000 30000000 100000000 300000000 1000000000}"
+TS_C="${TS_C:-100000 300000 1000000 3000000 10000000 30000000 100000000}"
 N_C="${N_C:-1000000}"
-ALPHA_C="${ALPHA_C:-200}"
+ALPHA_C="${ALPHA_C:-100}"
 
 N_D="${N_D:-1000000}"
-ALPHA_D="${ALPHA_D:-200}"
+ALPHA_D="${ALPHA_D:-100}"
 T_D="${T_D:-10000000}"
 
-TS_E="${TS_E:-100000 300000}"
-BUDGETS_E="${BUDGETS_E:-10000000 20000000 50000000 100000000}"
-W_SMALLS_E="${W_SMALLS_E:-256 512 1024}"
+# Optional D extension: lognormal volume, shape_sigma sweep
+D_SHAPE_SIGMAS="${D_SHAPE_SIGMAS:-0.0 0.5 1.0 1.5 2.0}"
 
-N_F="${N_F:-1000000}"
-T_F="${T_F:-1000000}"
-ALPHAS_F="${ALPHAS_F:-1000 3000 10000}"
+# Robustness / parallelism
+MAX_RETRIES="${MAX_RETRIES:-2}"
+RETRY_BACKOFF_SEC="${RETRY_BACKOFF_SEC:-2}"
+TIMEOUT_SEC="${TIMEOUT_SEC:-0}"
 
-# Split thresholds (to keep OOM risk low)
+MAX_PARALLEL_CAP="${MAX_PARALLEL_CAP:-8}"
+MEM_PER_TASK_GB="${MEM_PER_TASK_GB:-24}"
+MEM_RESERVE_GB="${MEM_RESERVE_GB:-8}"
+
+# Conservative split thresholds
 N_LARGE_THRESHOLD="${N_LARGE_THRESHOLD:-2000000}"
-T_SMALL_MAX="${T_SMALL_MAX:-10000000}"
+T_LARGE_THRESHOLD="${T_LARGE_THRESHOLD:-30000000}"
 
-# Logging + result retention
+# Logging + retention
 RUN_LOG_TO_STDOUT="${RUN_LOG_TO_STDOUT:-0}"
 RESULT_COPY_DATASETS="${RESULT_COPY_DATASETS:-0}"
 PRUNE_TEMP_DATASETS="${PRUNE_TEMP_DATASETS:-1}"
+
+# Generator scripts
+RECTGEN_BASE_SCRIPT="${RECTGEN_BASE_SCRIPT:-$ROOT/tools/alacarte_rectgen_generate.py}"
+ALACARTE_MODULE="${ALACARTE_MODULE:-$ROOT/third_party/Alacarte/alacarte_rectgen.py}"
+
+# Families (Alacarte params)
+F0_VOLUME_DIST="${F0_VOLUME_DIST:-fixed}"
+F0_VOLUME_CV="${F0_VOLUME_CV:-0.0}"        # fixed 时该值通常无意义；设 0 更直观
+F0_SHAPE_SIGMA="${F0_SHAPE_SIGMA:-0.0}"
+
+F1_VOLUME_DIST="${F1_VOLUME_DIST:-lognormal}"
+F1_VOLUME_CV="${F1_VOLUME_CV:-1.0}"
+F1_SHAPE_SIGMA="${F1_SHAPE_SIGMA:-1.0}"
 
 # Build parallelism
 if [[ -n "${JOBS:-}" ]]; then
@@ -372,22 +357,11 @@ else
 fi
 
 # ----------------------------
-# Model sets
+# Model set
 # ----------------------------
 MODELS_MAIN=(
   "ours enum_sampling"
   "ours sampling"
-  "kd_tree sampling"
-)
-
-MODELS_E_VAR=(
-  "ours sampling"
-  "ours enum_sampling"
-)
-
-MODELS_F=(
-  "ours sampling"
-  "ours enum_sampling"
   "kd_tree sampling"
 )
 
@@ -453,19 +427,11 @@ log "Building... (JOBS=$JOBS)"
 cmake --build "$BUILD_DIR" -j "$JOBS"
 
 SJS_RUN="$(find_exe "$BUILD_DIR" sjs_run || true)"
-SJS_GEN="$(find_exe "$BUILD_DIR" sjs_gen_dataset || true)"
-
 if [[ -z "$SJS_RUN" ]]; then
   echo "[run.sh][FATAL] Could not locate sjs_run under $BUILD_DIR" >&2
   exit 2
 fi
-if [[ -z "$SJS_GEN" ]]; then
-  echo "[run.sh][FATAL] Could not locate sjs_gen_dataset under $BUILD_DIR (needed for dataset caching)" >&2
-  exit 2
-fi
-
-log "Using sjs_run        : $SJS_RUN"
-log "Using sjs_gen_dataset: $SJS_GEN"
+log "Using sjs_run: $SJS_RUN"
 
 # ----------------------------
 # Parallelism defaults
@@ -494,19 +460,17 @@ fi
 MAX_PARALLEL="$MAX_PARALLEL_USER"
 (( MAX_PARALLEL < 1 )) && MAX_PARALLEL=1
 
-# Per-sweep parallelism (override with env if needed)
+# Per-sweep parallelism (override if needed)
 PAR_A="${PAR_A:-$MAX_PARALLEL}"
 PAR_B_SMALL="${PAR_B_SMALL:-$(( MAX_PARALLEL > 2 ? 2 : MAX_PARALLEL ))}"
 PAR_B_LARGE="${PAR_B_LARGE:-1}"
 PAR_C_SMALL="${PAR_C_SMALL:-$(( MAX_PARALLEL > 3 ? 3 : MAX_PARALLEL ))}"
 PAR_C_LARGE="${PAR_C_LARGE:-1}"
 PAR_D="${PAR_D:-$MAX_PARALLEL}"
-PAR_E="${PAR_E:-$MAX_PARALLEL}"
-PAR_F="${PAR_F:-1}"
 
 log "Host: nproc=$NPROC, mem~${MEM_GB}GB"
-log "Parallelism: max=$MAX_PARALLEL (A=$PAR_A, B_small=$PAR_B_SMALL, B_large=$PAR_B_LARGE, C_small=$PAR_C_SMALL, C_large=$PAR_C_LARGE, D=$PAR_D, E=$PAR_E, F=$PAR_F)"
-log "Auto-parallel knobs: cap=$MAX_PARALLEL_CAP, mem_per_task_gb=$MEM_PER_TASK_GB, mem_reserve_gb=$MEM_RESERVE_GB"
+log "Parallelism: max=$MAX_PARALLEL (A=$PAR_A, B_small=$PAR_B_SMALL, B_large=$PAR_B_LARGE, C_small=$PAR_C_SMALL, C_large=$PAR_C_LARGE, D=$PAR_D)"
+log "Enum: cap=$ENUM_CAP, precheck=$ENUM_PRECHECK"
 
 # ----------------------------
 # Build run signature (for resumability)
@@ -518,7 +482,8 @@ build_run_signature() {
     echo "threads=$THREADS"
     echo "repeats=$REPEATS"
     echo "seed=$SEED"
-    echo "gen=$GEN"
+
+    echo "python=$PYTHON"
     echo "gen_seed=$GEN_SEED"
     echo "audit_pairs=$AUDIT_PAIRS"
     echo "audit_seed=$AUDIT_SEED"
@@ -528,22 +493,21 @@ build_run_signature() {
     echo "F0=$F0_VOLUME_DIST,$F0_VOLUME_CV,$F0_SHAPE_SIGMA"
     echo "F1=$F1_VOLUME_DIST,$F1_VOLUME_CV,$F1_SHAPE_SIGMA"
 
-    echo "B_TH=$B_TH"
-    echo "W_SMALL_TH=$W_SMALL_TH"
     echo "enum_cap=$ENUM_CAP"
+    echo "enum_precheck=$ENUM_PRECHECK"
 
-    echo "RUN_A=$RUN_A RUN_B=$RUN_B RUN_C=$RUN_C RUN_D=$RUN_D RUN_E=$RUN_E RUN_F=$RUN_F"
+    echo "RUN_A=$RUN_A RUN_B=$RUN_B RUN_C=$RUN_C RUN_D=$RUN_D"
     echo "INCLUDE_B_F1=$INCLUDE_B_F1 INCLUDE_C_F1=$INCLUDE_C_F1"
+    echo "INCLUDE_ALPHA_CTRL=$INCLUDE_ALPHA_CTRL"
+    echo "RUN_D_SHAPE_SWEEP=$RUN_D_SHAPE_SWEEP D_SHAPE_SIGMAS=$D_SHAPE_SIGMAS"
 
-    echo "ALPHAS_A=$ALPHAS_A N_A=$N_A T_A=$T_A"
+    echo "ALPHAS_A_BASE=$ALPHAS_A_BASE ALPHAS_A_CTRL=$ALPHAS_A_CTRL N_A=$N_A T_A=$T_A"
     echo "NS_B=$NS_B ALPHA_B=$ALPHA_B T_B=$T_B"
     echo "TS_C=$TS_C N_C=$N_C ALPHA_C=$ALPHA_C"
     echo "N_D=$N_D ALPHA_D=$ALPHA_D T_D=$T_D"
-    echo "TS_E=$TS_E BUDGETS_E=$BUDGETS_E W_SMALLS_E=$W_SMALLS_E"
-    echo "ALPHAS_F=$ALPHAS_F N_F=$N_F T_F=$T_F"
 
     echo "N_LARGE_THRESHOLD=$N_LARGE_THRESHOLD"
-    echo "T_SMALL_MAX=$T_SMALL_MAX"
+    echo "T_LARGE_THRESHOLD=$T_LARGE_THRESHOLD"
   } | cksum | awk '{print $1 "-" $2}'
 }
 
@@ -551,7 +515,7 @@ RUN_SIGNATURE="$(build_run_signature)"
 log "Run signature: $RUN_SIGNATURE"
 
 # ----------------------------
-# Prepare rectgen preset scripts for F0/F1
+# Prepare rectgen preset scripts (F0/F1 + optional D shape sweep)
 # ----------------------------
 
 if [[ ! -f "$RECTGEN_BASE_SCRIPT" ]]; then
@@ -563,10 +527,13 @@ if [[ ! -f "$ALACARTE_MODULE" ]]; then
   exit 2
 fi
 
+# Patches:
+#  - override volume_dist / volume_cv / shape_sigma
+#  - inject `report["info"] = info` before report is written
 make_rectgen_preset() {
   local src="$1"; local dst="$2"; local vol_dist="$3"; local vol_cv="$4"; local shape_sigma="$5"; local tag="$6"
 
-  python3 - "$src" "$dst" "$vol_dist" "$vol_cv" "$shape_sigma" "$tag" <<'PY'
+  "$PYTHON" - "$src" "$dst" "$vol_dist" "$vol_cv" "$shape_sigma" "$tag" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -581,9 +548,18 @@ def sub_one(pattern, repl, name):
         raise SystemExit(f"[preset][FATAL] Expected to patch 1 occurrence of {name}, got {n}")
     text = new
 
+# param overrides
 sub_one(r'^\s*volume_dist\s*=\s*"[^"]+"\s*$', f'    volume_dist = "{vol_dist}"  # preset:{tag}', 'volume_dist')
 sub_one(r'^\s*volume_cv\s*=\s*[-+0-9.eE]+\s*$', f'    volume_cv = {vol_cv}  # preset:{tag}', 'volume_cv')
 sub_one(r'^\s*shape_sigma\s*=\s*[-+0-9.eE]+\s*$', f'    shape_sigma = {shape_sigma}  # preset:{tag}', 'shape_sigma')
+
+# inject report["info"] = info once
+needle = r'^\s*if\s+args\.report_path\s*:\s*$'
+ins = '    # preset: inject full Alacarte info for auditing\n    report["info"] = info\n\n'
+new, n = re.subn(needle, ins + r'\g<0>', text, count=1, flags=re.MULTILINE)
+if n != 1:
+    raise SystemExit(f"[preset][FATAL] Expected to inject info before report_path, got {n}")
+text = new
 
 Path(dst).write_text(text, encoding='utf-8')
 PY
@@ -591,24 +567,45 @@ PY
   chmod +x "$dst"
 }
 
+# Map family -> preset script
+declare -A RECTGEN_PRESET
+
 RECTGEN_F0="$PRESET_DIR/alacarte_rectgen_F0.py"
 RECTGEN_F1="$PRESET_DIR/alacarte_rectgen_F1.py"
-
 make_rectgen_preset "$RECTGEN_BASE_SCRIPT" "$RECTGEN_F0" "$F0_VOLUME_DIST" "$F0_VOLUME_CV" "$F0_SHAPE_SIGMA" "F0"
 make_rectgen_preset "$RECTGEN_BASE_SCRIPT" "$RECTGEN_F1" "$F1_VOLUME_DIST" "$F1_VOLUME_CV" "$F1_SHAPE_SIGMA" "F1"
+RECTGEN_PRESET["F0"]="$RECTGEN_F0"
+RECTGEN_PRESET["F1"]="$RECTGEN_F1"
 
-log "Rectgen preset scripts:"
-log "  F0: $RECTGEN_F0"
-log "  F1: $RECTGEN_F1"
+# Optional D shape sweep presets (lognormal + cv=1.0, varying shape_sigma)
+if [[ "$RUN_D_SHAPE_SWEEP" == "1" ]]; then
+  for sigma in $D_SHAPE_SIGMAS; do
+    tag="F1sigma$(sanitize_token "$sigma")"
+    dst="$PRESET_DIR/alacarte_rectgen_${tag}.py"
+    make_rectgen_preset "$RECTGEN_BASE_SCRIPT" "$dst" "lognormal" "1.0" "$sigma" "$tag"
+    RECTGEN_PRESET["$tag"]="$dst"
+  done
+fi
 
 rectgen_for_family() {
   local fam="$1"
-  case "$fam" in
-    F0) echo "$RECTGEN_F0" ;;
-    F1) echo "$RECTGEN_F1" ;;
-    *) echo "$RECTGEN_F0" ;;
-  esac
+  if [[ -n "${RECTGEN_PRESET[$fam]+x}" ]]; then
+    echo "${RECTGEN_PRESET[$fam]}"
+  else
+    echo "$RECTGEN_F0"
+  fi
 }
+
+log "Rectgen presets under: $PRESET_DIR"
+log "  F0 => ${RECTGEN_PRESET[F0]}"
+log "  F1 => ${RECTGEN_PRESET[F1]}"
+if [[ "$RUN_D_SHAPE_SWEEP" == "1" ]]; then
+  log "  D-shape presets:"
+  for sigma in $D_SHAPE_SIGMAS; do
+    tag="F1sigma$(sanitize_token "$sigma")"
+    log "    $tag => ${RECTGEN_PRESET[$tag]}"
+  done
+fi
 
 # ----------------------------
 # Dataset cache helpers
@@ -630,22 +627,37 @@ ds_paths_for() {
   echo "$dir/${name}_R.bin"$'\t'"$dir/${name}_S.bin"$'\t'"$dir/${name}_gen_report.json"$'\t'"$name"
 }
 
+minify_json_inplace() {
+  local json_path="$1"
+  [[ -f "$json_path" ]] || return 0
+  "$PYTHON" - "$json_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+p = Path(sys.argv[1])
+try:
+    obj = json.loads(p.read_text(encoding='utf-8'))
+except Exception:
+    sys.exit(0)
+# compact form
+p.write_text(json.dumps(obj, separators=(',', ':'), ensure_ascii=False), encoding='utf-8')
+PY
+}
+
 patch_run_csv_gen_report() {
   local csv_file="$1"
   local gen_json_path="$2"
-  if [[ ! -f "$csv_file" || ! -f "$gen_json_path" ]]; then
-    return 0
-  fi
-  python3 - "$csv_file" "$gen_json_path" <<'PY'
+  [[ -f "$csv_file" && -f "$gen_json_path" ]] || return 0
+
+  "$PYTHON" - "$csv_file" "$gen_json_path" <<'PY'
 import csv
 import sys
 from pathlib import Path
 
 csv_path, gen_path = sys.argv[1], sys.argv[2]
 
-gen_json = Path(gen_path).read_text(encoding='utf-8').strip()
-if not gen_json:
-    gen_json = "{}"
+gen_json = Path(gen_path).read_text(encoding='utf-8').strip() or "{}"
 
 with open(csv_path, newline='') as f:
     reader = csv.reader(f)
@@ -670,6 +682,71 @@ with open(csv_path, 'w', newline='') as f:
     writer.writerows(out_rows)
 PY
 }
+
+# Fill note column for failed reps using per-task log (best-effort)
+patch_run_csv_note_from_log() {
+  local csv_file="$1"
+  local log_file="$2"
+  [[ -f "$csv_file" && -f "$log_file" ]] || return 0
+
+  "$PYTHON" - "$csv_file" "$log_file" <<'PY'
+import csv
+import re
+import sys
+from pathlib import Path
+
+csv_path, log_path = sys.argv[1], sys.argv[2]
+
+# Extract errors: "Run failed (rep= X ): <msg>"
+rep_err = {}
+pat = re.compile(r"Run failed \(rep=\s*(\d+)\s*\)\s*:\s*(.*)")
+for line in Path(log_path).read_text(encoding='utf-8', errors='ignore').splitlines():
+    m = pat.search(line)
+    if not m:
+        continue
+    rep = int(m.group(1))
+    msg = m.group(2).strip()
+    # keep first occurrence
+    rep_err.setdefault(rep, msg)
+
+with open(csv_path, newline='') as f:
+    rows = list(csv.reader(f))
+if not rows:
+    sys.exit(0)
+
+hdr = rows[0]
+try:
+    rep_i = hdr.index('rep')
+    ok_i  = hdr.index('ok')
+    note_i = hdr.index('note')
+except ValueError:
+    sys.exit(0)
+
+out = [hdr]
+changed = False
+for r in rows[1:]:
+    if len(r) < len(hdr):
+        r = r + [''] * (len(hdr) - len(r))
+    try:
+        rep = int(r[rep_i])
+    except Exception:
+        rep = None
+    ok = r[ok_i]
+    if ok != '1':
+        if (not r[note_i]) and (rep is not None) and (rep in rep_err):
+            r[note_i] = rep_err[rep]
+            changed = True
+    out.append(r)
+
+if changed:
+    with open(csv_path, 'w', newline='') as f:
+        csv.writer(f).writerows(out)
+PY
+}
+
+# ----------------------------
+# Dataset generation (python rectgen presets)
+# ----------------------------
 
 ensure_dataset() {
   local fam="$1"; local N="$2"; local alpha="$3"
@@ -707,7 +784,6 @@ ensure_dataset() {
     echo "N=$N"
     echo "alpha=$alpha"
     echo "gen_seed=$GEN_SEED"
-    echo "gen=$GEN"
     echo "rectgen_script=$(rectgen_for_family "$fam")"
     echo "alacarte_module=$ALACARTE_MODULE"
     echo "audit_pairs=$AUDIT_PAIRS"
@@ -716,21 +792,19 @@ ensure_dataset() {
 
   log "[dataset] Generating $name (fam=$fam N=$N alpha=$alpha)"
 
+  local preset
+  preset="$(rectgen_for_family "$fam")"
+
   local -a gen_cmd=(
-    "$SJS_GEN"
-    "--dataset_source=synthetic"
-    "--gen=$GEN"
-    "--dataset=$name"
-    "--dim=2"
-    "--n_r=$N" "--n_s=$N"
-    "--alpha=$alpha"
-    "--gen_seed=$GEN_SEED"
-    "--out_dir=$(ds_dir_for "$fam")"
-    "--write_csv=0"
-    "--rectgen_script=$(rectgen_for_family "$fam")"
+    "$PYTHON" "$preset"
+    "--nR=$N" "--nS=$N" "--d=2"
+    "--alpha_out=$alpha"
+    "--seed=$GEN_SEED"
+    "--out_r=$path_r" "--out_s=$path_s"
+    "--dataset_name=$name"
+    "--report_path=$rep"
+    "--audit_pairs=$AUDIT_PAIRS" "--audit_seed=$AUDIT_SEED"
     "--alacarte_module=$ALACARTE_MODULE"
-    "--audit_pairs=$AUDIT_PAIRS"
-    "--audit_seed=$AUDIT_SEED"
   )
 
   {
@@ -761,13 +835,16 @@ ensure_dataset() {
     return 1
   fi
 
+  # Minify JSON for easier CSV embedding
+  minify_json_inplace "$rep" || true
+
   touch "$ok_flag"
   rmdir "$lock_dir" || true
   return 0
 }
 
 # ----------------------------
-# Task registry (for pre-generating datasets)
+# Task registry (pre-generate datasets)
 # ----------------------------
 
 declare -A DATASET_SPEC
@@ -787,6 +864,74 @@ register_dataset() {
 # Task runner
 # ----------------------------
 
+write_not_runnable_csv() {
+  local csv_file="$1"
+  local ds_name="$2"
+  local method="$3"
+  local variant="$4"
+  local N="$5"
+  local t="$6"
+  local reason="$7"
+
+  "$PYTHON" - "$csv_file" "$ds_name" "$method" "$variant" "$N" "$t" "$REPEATS" "$SEED" "$ENUM_CAP" "$reason" <<'PY'
+import csv
+import json
+import sys
+from pathlib import Path
+
+(csv_path, ds_name, method, variant, N, t, repeats, seed0, enum_cap, reason) = sys.argv[1:]
+N = int(N)
+t = int(t)
+repeats = int(repeats)
+seed0 = int(seed0)
+enum_cap = int(enum_cap)
+
+hdr = [
+  "dataset","method","variant","rep","seed","n_r","n_s","t","ok","wall_ms",
+  "count_value","count_exact","count_stderr","count_ci_low","count_ci_high",
+  "used_enumeration","enum_truncated","enum_cap","adaptive_branch","adaptive_pilot_pairs",
+  "phases_json","note","config_json","gen_report_json",
+]
+
+cfg = {
+  "dataset": {"name": ds_name, "source": "binary", "dim": 2},
+  "run": {"method": method, "variant": variant, "t": t, "seed": seed0, "repeats": repeats, "threads": 1, "enum_cap": enum_cap},
+  "note": "not_runnable_stub"
+}
+
+Path(csv_path).parent.mkdir(parents=True, exist_ok=True)
+with open(csv_path, 'w', newline='') as f:
+    w = csv.writer(f)
+    w.writerow(hdr)
+    for rep in range(repeats):
+        seed = seed0 + rep
+        row = [
+          ds_name, method, variant, rep, seed, N, N, t,
+          0, "", "", 0, "", "", "",
+          1 if variant=="enum_sampling" else 0,
+          0, enum_cap,
+          "", 0,
+          "{}",
+          reason,
+          json.dumps(cfg, separators=(',',':')),
+          "{}",
+        ]
+        w.writerow(row)
+PY
+}
+
+# Expected join size from alpha_out definition: |J| ≈ alpha_out*(|R|+|S|) = alpha*2N
+expected_join_size() {
+  local N="$1"; local alpha="$2"
+  "$PYTHON" - "$N" "$alpha" <<'PY'
+import sys
+N = int(float(sys.argv[1]))
+a = float(sys.argv[2])
+# alpha_out is |J|/(|R|+|S|); assume |R|=|S|=N
+print(int(round(a * (2.0 * N))))
+PY
+}
+
 run_one_task() {
   local task_id="$1"
   local sweep="$2"
@@ -796,12 +941,11 @@ run_one_task() {
   local t="$6"
   local method="$7"
   local variant="$8"
-  local j_star="$9"
-  local w_small="${10}"
-  local force="${11}"
-  local attempt="${12:-0}"
+  local force="$9"
+  local attempt="${10:-0}"
 
   local ok_flag="$STATUS_ROOT/${task_id}.ok"
+  local nr_flag="$STATUS_ROOT/${task_id}.nr"
   local fail_flag="$STATUS_ROOT/${task_id}.fail"
   local exit_flag="$STATUS_ROOT/${task_id}.exit"
   local meta_flag="$STATUS_ROOT/${task_id}.meta"
@@ -810,20 +954,27 @@ run_one_task() {
   local log_file="$LOG_ROOT/${task_id}.log"
   local csv_file="$out_dir/run.csv"
 
-  if [[ "$force" != "1" && -f "$ok_flag" && -f "$csv_file" && -f "$meta_flag" ]]; then
-    if grep -Fxq "run_signature=$RUN_SIGNATURE" "$meta_flag" \
-      && csv_all_ok "$csv_file" >/dev/null 2>&1; then
-      echo 0 > "$exit_flag"
-      return 0
+  # fast path (already ok / nr with same run_signature)
+  if [[ "$force" != "1" && -f "$meta_flag" ]]; then
+    if grep -Fxq "run_signature=$RUN_SIGNATURE" "$meta_flag" 2>/dev/null; then
+      if [[ -f "$ok_flag" && -f "$csv_file" ]]; then
+        echo 0 > "$exit_flag"
+        return 0
+      fi
+      if [[ -f "$nr_flag" && -f "$csv_file" ]]; then
+        echo 0 > "$exit_flag"
+        return 0
+      fi
     fi
   fi
 
-  rm -f "$ok_flag" "$fail_flag" "$exit_flag" "$meta_flag"
+  rm -f "$ok_flag" "$nr_flag" "$fail_flag" "$exit_flag" "$meta_flag"
   rm -rf "$out_dir"
   mkdir -p "$out_dir"
 
   if ! ensure_dataset "$fam" "$N" "$alpha"; then
-    echo "dataset_generation_failed=1" > "$meta_flag"
+    echo "run_signature=$RUN_SIGNATURE" > "$meta_flag"
+    echo "dataset_generation_failed=1" >> "$meta_flag"
     touch "$fail_flag"
     echo 1 > "$exit_flag"
     return 0
@@ -833,6 +984,45 @@ run_one_task() {
   paths="$(ds_paths_for "$fam" "$N" "$alpha")"
   local path_r path_s rep_path ds_name
   IFS=$'\t' read -r path_r path_s rep_path ds_name <<< "$paths"
+
+  # EnumSampling precheck: if expected |J| > ENUM_CAP, mark Not runnable (no actual run)
+  if [[ "$method" == "ours" && "$variant" == "enum_sampling" && "$ENUM_PRECHECK" == "1" && "$ENUM_CAP" -gt 0 ]]; then
+    local expJ
+    expJ="$(expected_join_size "$N" "$alpha")"
+    if [[ "$expJ" -gt "$ENUM_CAP" ]]; then
+      local reason
+      reason="Not runnable: expected |J|≈${expJ} > enum_cap=${ENUM_CAP} (precheck)"
+
+      {
+        echo "run_signature=$RUN_SIGNATURE"
+        echo "attempt=$attempt"
+        echo "task_id=$task_id"
+        echo "sweep=$sweep"
+        echo "family=$fam"
+        echo "dataset=$ds_name"
+        echo "N=$N"
+        echo "alpha=$alpha"
+        echo "t=$t"
+        echo "method=$method"
+        echo "variant=$variant"
+        echo "precheck_expected_J=$expJ"
+        echo "enum_cap=$ENUM_CAP"
+        echo "reason=$reason"
+        echo "path_r=$path_r"
+        echo "path_s=$path_s"
+        echo "gen_report=$rep_path"
+      } > "$meta_flag"
+
+      echo "[$(timestamp_now)][run.sh][task] NR(precheck) task_id=$task_id $reason" > "$log_file"
+
+      write_not_runnable_csv "$csv_file" "$ds_name" "$method" "$variant" "$N" "$t" "$reason"
+      patch_run_csv_gen_report "$csv_file" "$rep_path" || true
+
+      touch "$nr_flag"
+      echo 0 > "$exit_flag"
+      return 0
+    fi
+  fi
 
   local -a cmd=(
     "$SJS_RUN"
@@ -846,7 +1036,6 @@ run_one_task() {
     "--seed=$SEED"
     "--repeats=$REPEATS"
     "--threads=$THREADS"
-    "--j_star=$j_star"
     "--enum_cap=$ENUM_CAP"
     "--write_samples=0"
     "--verify=0"
@@ -854,7 +1043,6 @@ run_one_task() {
     "--results_file=$csv_file"
     "--log_level=info"
     "--log_timestamp=1"
-    "--w_small=$w_small"
   )
 
   {
@@ -869,8 +1057,7 @@ run_one_task() {
     echo "t=$t"
     echo "method=$method"
     echo "variant=$variant"
-    echo "j_star=$j_star"
-    echo "w_small=$w_small"
+    echo "enum_cap=$ENUM_CAP"
     echo "path_r=$path_r"
     echo "path_s=$path_s"
     echo "gen_report=$rep_path"
@@ -893,31 +1080,68 @@ run_one_task() {
 
   if [[ "$rc" -ne 0 ]]; then
     echo "nonzero_exit=$rc" >> "$meta_flag"
+    # EnumSampling: treat crash as Not runnable; others: fail
+    if [[ "$method" == "ours" && "$variant" == "enum_sampling" ]]; then
+      local reason="Not runnable: process exit rc=$rc"
+      write_not_runnable_csv "$csv_file" "$ds_name" "$method" "$variant" "$N" "$t" "$reason" || true
+      patch_run_csv_gen_report "$csv_file" "$rep_path" || true
+      touch "$nr_flag"
+      return 0
+    fi
     touch "$fail_flag"
     return 0
   fi
   if [[ ! -f "$csv_file" ]]; then
     echo "missing_csv=1" >> "$meta_flag"
+    if [[ "$method" == "ours" && "$variant" == "enum_sampling" ]]; then
+      local reason="Not runnable: missing run.csv (rc=0 but no output)"
+      write_not_runnable_csv "$csv_file" "$ds_name" "$method" "$variant" "$N" "$t" "$reason" || true
+      patch_run_csv_gen_report "$csv_file" "$rep_path" || true
+      touch "$nr_flag"
+      return 0
+    fi
     touch "$fail_flag"
     return 0
   fi
 
+  # Patch gen_report_json and (best-effort) note for failures
   patch_run_csv_gen_report "$csv_file" "$rep_path" || true
+  patch_run_csv_note_from_log "$csv_file" "$log_file" || true
 
   local rows
   rows="$(csv_row_count "$csv_file")"
   if [[ "$rows" -lt "$REPEATS" ]]; then
     echo "short_csv_rows=$rows" >> "$meta_flag"
-    touch "$fail_flag"
-    return 0
-  fi
-  if ! csv_all_ok "$csv_file" >/dev/null 2>&1; then
-    echo "not_all_ok=1" >> "$meta_flag"
+    if [[ "$method" == "ours" && "$variant" == "enum_sampling" ]]; then
+      local reason="Not runnable: short CSV rows=$rows (<repeats=$REPEATS)"
+      # keep produced CSV but mark NR
+      touch "$nr_flag"
+      echo "nr_reason=$reason" >> "$meta_flag"
+      return 0
+    fi
     touch "$fail_flag"
     return 0
   fi
 
-  touch "$ok_flag"
+  local okc
+  okc="$(csv_ok_count "$csv_file")"
+
+  if [[ "$okc" -eq "$REPEATS" ]]; then
+    touch "$ok_flag"
+    return 0
+  fi
+
+  # Not all ok
+  echo "ok_count=$okc" >> "$meta_flag"
+
+  if [[ "$method" == "ours" && "$variant" == "enum_sampling" && "$okc" -eq 0 ]]; then
+    # EnumSampling not runnable (cap / OOM / other failure)
+    touch "$nr_flag"
+    return 0
+  fi
+
+  # otherwise treat as failure (will retry)
+  touch "$fail_flag"
   return 0
 }
 
@@ -929,11 +1153,11 @@ run_task_file_with_parallel() {
 
   log "Running tasks: $(basename "$task_file") (attempt=$attempt, parallel=$parallel, force=$force)"
 
-  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant j_star w_small; do
+  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant; do
     [[ -z "$task_id" ]] && continue
     [[ "$task_id" =~ ^# ]] && continue
     wait_for_slot "$parallel"
-    (run_one_task "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant" "$j_star" "$w_small" "$force" "$attempt") &
+    (run_one_task "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant" "$force" "$attempt") &
   done < "$task_file"
 
   wait || true
@@ -944,12 +1168,12 @@ collect_failures_from_task_file() {
   local out_fail_list="$2"
   : > "$out_fail_list"
 
-  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant j_star w_small; do
+  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant; do
     [[ -z "$task_id" ]] && continue
     [[ "$task_id" =~ ^# ]] && continue
-    if [[ ! -f "$STATUS_ROOT/${task_id}.ok" ]]; then
-      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-        "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant" "$j_star" "$w_small" \
+    if [[ ! -f "$STATUS_ROOT/${task_id}.ok" && ! -f "$STATUS_ROOT/${task_id}.nr" ]]; then
+      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+        "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant" \
         >> "$out_fail_list"
     fi
   done < "$task_file"
@@ -959,13 +1183,17 @@ write_manifest_csv() {
   local task_file="$1"
   local out_csv="$2"
   mkdir -p "$(dirname "$out_csv")"
-  echo "task_id,sweep,family,N,alpha,t,method,variant,j_star,w_small,out_dir,log_file" > "$out_csv"
-  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant j_star w_small; do
+  echo "task_id,sweep,family,N,alpha,t,method,variant,out_dir,log_file,status" > "$out_csv"
+  while IFS=$'\t' read -r task_id sweep fam N alpha t method variant; do
     [[ -z "$task_id" ]] && continue
     [[ "$task_id" =~ ^# ]] && continue
     local out_dir="$OUT_ROOT/${sweep}/${task_id}"
     local log_file="$LOG_ROOT/${task_id}.log"
-    echo "${task_id},${sweep},${fam},${N},${alpha},${t},${method},${variant},${j_star},${w_small},${out_dir},${log_file}" >> "$out_csv"
+    local status=""
+    if [[ -f "$STATUS_ROOT/${task_id}.ok" ]]; then status="OK"; fi
+    if [[ -f "$STATUS_ROOT/${task_id}.nr" ]]; then status="NR"; fi
+    if [[ -f "$STATUS_ROOT/${task_id}.fail" ]]; then status="FAIL"; fi
+    echo "${task_id},${sweep},${fam},${N},${alpha},${t},${method},${variant},${out_dir},${log_file},${status}" >> "$out_csv"
   done < "$task_file"
 }
 
@@ -996,7 +1224,7 @@ run_with_retries() {
   if (( failed_now > 0 )); then
     warn "$name: still has failures after retries: $failed_now tasks"
   else
-    log "$name: all tasks OK"
+    log "$name: all tasks done (OK or NR)"
   fi
 }
 
@@ -1005,8 +1233,8 @@ run_with_retries() {
 # ----------------------------
 
 gen_task_id() {
-  local sweep="$1"; local fam="$2"; local N="$3"; local alpha="$4"; local t="$5"; local method="$6"; local variant="$7"; local j_star="$8"; local w_small="$9"
-  echo "${sweep}__${fam}__n${N}__a$(sanitize_token "$alpha")__t${t}__${method}__${variant}__B${j_star}__w${w_small}"
+  local sweep="$1"; local fam="$2"; local N="$3"; local alpha="$4"; local t="$5"; local method="$6"; local variant="$7"
+  echo "${sweep}__${fam}__n${N}__a$(sanitize_token "$alpha")__t${t}__${method}__${variant}"
 }
 
 log "Generating task manifests..."
@@ -1017,19 +1245,23 @@ TASK_B_LARGE="$MANIFEST_DIR/tasks_B_N_large.tsv"
 TASK_C_SMALL="$MANIFEST_DIR/tasks_C_t_small.tsv"
 TASK_C_LARGE="$MANIFEST_DIR/tasks_C_t_large.tsv"
 TASK_D="$MANIFEST_DIR/tasks_D_family.tsv"
-TASK_E="$MANIFEST_DIR/tasks_E_budget.tsv"
-TASK_F="$MANIFEST_DIR/tasks_F_high_alpha.tsv"
+TASK_D_SHAPE="$MANIFEST_DIR/tasks_D_shape.tsv"
 
-TASK_HEADER="# task_id\tsweep\tfamily\tN\talpha\tt\tmethod\tvariant\tj_star\tw_small"
+TASK_HEADER="# task_id\tsweep\tfamily\tN\talpha\tt\tmethod\tvariant"
 
-: > "$TASK_A"; echo -e "$TASK_HEADER" > "$TASK_A"
-: > "$TASK_B_SMALL"; echo -e "$TASK_HEADER" > "$TASK_B_SMALL"
-: > "$TASK_B_LARGE"; echo -e "$TASK_HEADER" > "$TASK_B_LARGE"
-: > "$TASK_C_SMALL"; echo -e "$TASK_HEADER" > "$TASK_C_SMALL"
-: > "$TASK_C_LARGE"; echo -e "$TASK_HEADER" > "$TASK_C_LARGE"
-: > "$TASK_D"; echo -e "$TASK_HEADER" > "$TASK_D"
-: > "$TASK_E"; echo -e "$TASK_HEADER" > "$TASK_E"
-: > "$TASK_F"; echo -e "$TASK_HEADER" > "$TASK_F"
+: > "$TASK_A";      echo -e "$TASK_HEADER" > "$TASK_A"
+: > "$TASK_B_SMALL";echo -e "$TASK_HEADER" > "$TASK_B_SMALL"
+: > "$TASK_B_LARGE";echo -e "$TASK_HEADER" > "$TASK_B_LARGE"
+: > "$TASK_C_SMALL";echo -e "$TASK_HEADER" > "$TASK_C_SMALL"
+: > "$TASK_C_LARGE";echo -e "$TASK_HEADER" > "$TASK_C_LARGE"
+: > "$TASK_D";      echo -e "$TASK_HEADER" > "$TASK_D"
+: > "$TASK_D_SHAPE";echo -e "$TASK_HEADER" > "$TASK_D_SHAPE"
+
+# Compose ALPHAS_A
+ALPHAS_A="$ALPHAS_A_BASE"
+if [[ "$INCLUDE_ALPHA_CTRL" == "1" ]]; then
+  ALPHAS_A="$ALPHAS_A $ALPHAS_A_CTRL"
+fi
 
 # (A*) alpha sweep, F0+F1
 if [[ "$RUN_A" == "1" ]]; then
@@ -1038,10 +1270,10 @@ if [[ "$RUN_A" == "1" ]]; then
       register_dataset "$fam" "$N_A" "$alpha"
       for mv in "${MODELS_MAIN[@]}"; do
         read -r method variant <<< "$mv"
-        sweep="A_alpha_${fam}"
-        task_id="$(gen_task_id "$sweep" "$fam" "$N_A" "$alpha" "$T_A" "$method" "$variant" "$B_TH" "$W_SMALL_TH")"
-        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-          "$task_id" "$sweep" "$fam" "$N_A" "$alpha" "$T_A" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
+        sweep="A_alpha"
+        task_id="$(gen_task_id "$sweep" "$fam" "$N_A" "$alpha" "$T_A" "$method" "$variant")"
+        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+          "$task_id" "$sweep" "$fam" "$N_A" "$alpha" "$T_A" "$method" "$variant" \
           >> "$TASK_A"
       done
     done
@@ -1060,15 +1292,15 @@ if [[ "$RUN_B" == "1" ]]; then
       register_dataset "$fam" "$N" "$ALPHA_B"
       for mv in "${MODELS_MAIN[@]}"; do
         read -r method variant <<< "$mv"
-        sweep="B_N_${fam}"
-        task_id="$(gen_task_id "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant" "$B_TH" "$W_SMALL_TH")"
+        sweep="B_N"
+        task_id="$(gen_task_id "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant")"
         if (( N >= N_LARGE_THRESHOLD )); then
-          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-            "$task_id" "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
+          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+            "$task_id" "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant" \
             >> "$TASK_B_LARGE"
         else
-          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-            "$task_id" "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
+          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+            "$task_id" "$sweep" "$fam" "$N" "$ALPHA_B" "$T_B" "$method" "$variant" \
             >> "$TASK_B_SMALL"
         fi
       done
@@ -1088,16 +1320,16 @@ if [[ "$RUN_C" == "1" ]]; then
     for t in $TS_C; do
       for mv in "${MODELS_MAIN[@]}"; do
         read -r method variant <<< "$mv"
-        sweep="C_t_${fam}"
-        task_id="$(gen_task_id "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant" "$B_TH" "$W_SMALL_TH")"
-        if (( t <= T_SMALL_MAX )); then
-          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-            "$task_id" "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
-            >> "$TASK_C_SMALL"
-        else
-          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-            "$task_id" "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
+        sweep="C_t"
+        task_id="$(gen_task_id "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant")"
+        if (( t > T_LARGE_THRESHOLD )); then
+          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+            "$task_id" "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant" \
             >> "$TASK_C_LARGE"
+        else
+          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+            "$task_id" "$sweep" "$fam" "$N_C" "$ALPHA_C" "$t" "$method" "$variant" \
+            >> "$TASK_C_SMALL"
         fi
       done
     done
@@ -1110,54 +1342,28 @@ if [[ "$RUN_D" == "1" ]]; then
     register_dataset "$fam" "$N_D" "$ALPHA_D"
     for mv in "${MODELS_MAIN[@]}"; do
       read -r method variant <<< "$mv"
-      sweep="D_family_${fam}"
-      task_id="$(gen_task_id "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant" "$B_TH" "$W_SMALL_TH")"
-      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-        "$task_id" "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
+      sweep="D_family"
+      task_id="$(gen_task_id "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant")"
+      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+        "$task_id" "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant" \
         >> "$TASK_D"
     done
   done
 fi
 
-# (E) budget diagnosis (B, w_small sweep) @ small t; F0 only
-if [[ "$RUN_E" == "1" ]]; then
-  fam="F0"
-  register_dataset "$fam" "$N_D" "$ALPHA_D"  # ensure base dataset exists
-
-  for t in $TS_E; do
-    for B in $BUDGETS_E; do
-      for ws in $W_SMALLS_E; do
-        for mv in "${MODELS_E_VAR[@]}"; do
-          read -r method variant <<< "$mv"
-          sweep="E_budget_${fam}"
-          task_id="$(gen_task_id "$sweep" "$fam" "$N_D" "$ALPHA_D" "$t" "$method" "$variant" "$B" "$ws")"
-          printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-            "$task_id" "$sweep" "$fam" "$N_D" "$ALPHA_D" "$t" "$method" "$variant" "$B" "$ws" \
-            >> "$TASK_E"
-        done
-      done
-    done
-
-    sweep="E_budget_${fam}"
-    task_id="$(gen_task_id "$sweep" "$fam" "$N_D" "$ALPHA_D" "$t" "kd_tree" "sampling" "$B_TH" "$W_SMALL_TH")"
-    printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-      "$task_id" "$sweep" "$fam" "$N_D" "$ALPHA_D" "$t" "kd_tree" "sampling" "$B_TH" "$W_SMALL_TH" \
-      >> "$TASK_E"
-  done
-fi
-
-# (F) high-density alpha sweep (optional), F0 only; limited model set
-if [[ "$RUN_F" == "1" ]]; then
-  fam="F0"
-  for alpha in $ALPHAS_F; do
-    register_dataset "$fam" "$N_F" "$alpha"
-    for mv in "${MODELS_F[@]}"; do
+# (D ext) shape_sigma sweep, lognormal + cv=1.0
+if [[ "$RUN_D_SHAPE_SWEEP" == "1" ]]; then
+  for sigma in $D_SHAPE_SIGMAS; do
+    fam="F1sigma$(sanitize_token "$sigma")"
+    # preset already created in RECTGEN_PRESET
+    register_dataset "$fam" "$N_D" "$ALPHA_D"
+    for mv in "${MODELS_MAIN[@]}"; do
       read -r method variant <<< "$mv"
-      sweep="F_high_alpha_${fam}"
-      task_id="$(gen_task_id "$sweep" "$fam" "$N_F" "$alpha" "$T_F" "$method" "$variant" "$B_TH" "$W_SMALL_TH")"
-      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-        "$task_id" "$sweep" "$fam" "$N_F" "$alpha" "$T_F" "$method" "$variant" "$B_TH" "$W_SMALL_TH" \
-        >> "$TASK_F"
+      sweep="D_shape"
+      task_id="$(gen_task_id "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant")"
+      printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+        "$task_id" "$sweep" "$fam" "$N_D" "$ALPHA_D" "$T_D" "$method" "$variant" \
+        >> "$TASK_D_SHAPE"
     done
   done
 fi
@@ -1168,8 +1374,7 @@ write_manifest_csv "$TASK_B_LARGE" "$MANIFEST_DIR/manifest_B_N_large.csv"
 write_manifest_csv "$TASK_C_SMALL" "$MANIFEST_DIR/manifest_C_t_small.csv"
 write_manifest_csv "$TASK_C_LARGE" "$MANIFEST_DIR/manifest_C_t_large.csv"
 write_manifest_csv "$TASK_D" "$MANIFEST_DIR/manifest_D_family.csv"
-write_manifest_csv "$TASK_E" "$MANIFEST_DIR/manifest_E_budget.csv"
-write_manifest_csv "$TASK_F" "$MANIFEST_DIR/manifest_F_high_alpha.csv"
+write_manifest_csv "$TASK_D_SHAPE" "$MANIFEST_DIR/manifest_D_shape.csv"
 
 CNT_A="$(task_count "$TASK_A")"
 CNT_BS="$(task_count "$TASK_B_SMALL")"
@@ -1177,11 +1382,10 @@ CNT_BL="$(task_count "$TASK_B_LARGE")"
 CNT_CS="$(task_count "$TASK_C_SMALL")"
 CNT_CL="$(task_count "$TASK_C_LARGE")"
 CNT_D="$(task_count "$TASK_D")"
-CNT_E="$(task_count "$TASK_E")"
-CNT_F="$(task_count "$TASK_F")"
-TOTAL_TASKS=$(( CNT_A + CNT_BS + CNT_BL + CNT_CS + CNT_CL + CNT_D + CNT_E + CNT_F ))
+CNT_DS="$(task_count "$TASK_D_SHAPE")"
+TOTAL_TASKS=$(( CNT_A + CNT_BS + CNT_BL + CNT_CS + CNT_CL + CNT_D + CNT_DS ))
 
-log "Task counts: A=$CNT_A, B_small=$CNT_BS, B_large=$CNT_BL, C_small=$CNT_CS, C_large=$CNT_CL, D=$CNT_D, E=$CNT_E, F=$CNT_F (total=$TOTAL_TASKS)"
+log "Task counts: A=$CNT_A, B_small=$CNT_BS, B_large=$CNT_BL, C_small=$CNT_CS, C_large=$CNT_CL, D=$CNT_D, D_shape=$CNT_DS (total=$TOTAL_TASKS)"
 if (( TOTAL_TASKS == 0 )); then
   warn "No tasks generated. Check RUN_* flags and grids."
   exit 2
@@ -1223,15 +1427,12 @@ fi
 if (( CNT_D > 0 )); then
   run_with_retries "$TASK_D" "$PAR_D" "D_family"
 fi
-if (( CNT_E > 0 )); then
-  run_with_retries "$TASK_E" "$PAR_E" "E_budget"
-fi
-if (( CNT_F > 0 )); then
-  run_with_retries "$TASK_F" "$PAR_F" "F_high_alpha"
+if (( CNT_DS > 0 )); then
+  run_with_retries "$TASK_D_SHAPE" "$PAR_D" "D_shape"
 fi
 
 # ----------------------------
-# Post: merge CSVs + write failure report
+# Post: merge CSVs + summarize status
 # ----------------------------
 
 MERGED_DIR="$MANIFEST_DIR/merged"
@@ -1243,74 +1444,294 @@ while IFS= read -r d; do
 done < <(find "$OUT_ROOT" -mindepth 1 -maxdepth 1 -type d | sort)
 
 GLOBAL_FAIL="$MANIFEST_DIR/FAILURES.tsv"
+GLOBAL_NR="$MANIFEST_DIR/NOT_RUNNABLE.tsv"
+
 {
   echo -e "$TASK_HEADER"
-  for tf in "$TASK_A" "$TASK_B_SMALL" "$TASK_B_LARGE" "$TASK_C_SMALL" "$TASK_C_LARGE" "$TASK_D" "$TASK_E" "$TASK_F"; do
-    while IFS=$'\t' read -r task_id sweep fam N alpha t method variant j_star w_small; do
+  for tf in "$TASK_A" "$TASK_B_SMALL" "$TASK_B_LARGE" "$TASK_C_SMALL" "$TASK_C_LARGE" "$TASK_D" "$TASK_D_SHAPE"; do
+    while IFS=$'\t' read -r task_id sweep fam N alpha t method variant; do
       [[ -z "$task_id" ]] && continue
       [[ "$task_id" =~ ^# ]] && continue
-      if [[ ! -f "$STATUS_ROOT/${task_id}.ok" ]]; then
-        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
-          "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant" "$j_star" "$w_small"
+      if [[ ! -f "$STATUS_ROOT/${task_id}.ok" && ! -f "$STATUS_ROOT/${task_id}.nr" ]]; then
+        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+          "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant"
       fi
     done < "$tf"
   done
 } > "$GLOBAL_FAIL"
+
+{
+  echo -e "$TASK_HEADER"
+  for tf in "$TASK_A" "$TASK_B_SMALL" "$TASK_B_LARGE" "$TASK_C_SMALL" "$TASK_C_LARGE" "$TASK_D" "$TASK_D_SHAPE"; do
+    while IFS=$'\t' read -r task_id sweep fam N alpha t method variant; do
+      [[ -z "$task_id" ]] && continue
+      [[ "$task_id" =~ ^# ]] && continue
+      if [[ -f "$STATUS_ROOT/${task_id}.nr" ]]; then
+        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+          "$task_id" "$sweep" "$fam" "$N" "$alpha" "$t" "$method" "$variant"
+      fi
+    done < "$tf"
+  done
+} > "$GLOBAL_NR"
 
 FAIL_N=0
 if [[ -s "$GLOBAL_FAIL" ]]; then
   FAIL_N=$(( $(wc -l < "$GLOBAL_FAIL" | tr -d '[:space:]') - 1 ))
   (( FAIL_N < 0 )) && FAIL_N=0
 fi
+NR_N=0
+if [[ -s "$GLOBAL_NR" ]]; then
+  NR_N=$(( $(wc -l < "$GLOBAL_NR" | tr -d '[:space:]') - 1 ))
+  (( NR_N < 0 )) && NR_N=0
+fi
+
+# ----------------------------
+# Post: summary statistics (mean/median/CV + throughput for C*)
+# ----------------------------
+
+SUMMARY_DIR="$MANIFEST_DIR/summary"
+mkdir -p "$SUMMARY_DIR"
+
+"$PYTHON" - "$MERGED_DIR" "$SUMMARY_DIR" <<'PY'
+import csv
+import json
+import os
+import statistics
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+merged_dir = Path(sys.argv[1])
+out_dir = Path(sys.argv[2])
+out_dir.mkdir(parents=True, exist_ok=True)
+
+# metrics we care about (phases_json keys)
+PHASE_KEYS = [
+    "run_build_ms", "run_count_ms", "run_sample_ms",
+    # SJS-Sampling fine-grained
+    "build_events_ms", "build_y_domain_ms", "build_ranks_ms", "build_active_indices_ms",
+    "phase1_count_ms", "phase2_plan_ms", "phase3_sample_ms",
+    # KD-tree fine-grained
+    "build_ms", "build_points_ms", "phase3_fill_ms",
+    # EnumSampling fine-grained
+    "phase1_enumerate_materialize_ms", "phase2_resample_ms",
+]
+
+# group key -> list of rows (ok=1 only)
+# key: (sweep, family, N, alpha, t, method, variant)
+rows_ok = defaultdict(list)
+rows_all = defaultdict(list)
+
+for csv_path in sorted(merged_dir.glob("*_merged.csv")):
+    sweep = csv_path.name.replace("_merged.csv", "")
+    with csv_path.open(newline='') as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            # infer family/N/alpha from dataset name: d2_<fam>_n<N>_a<alpha>_gs<seed>
+            ds = r.get('dataset','')
+            fam = ''
+            N = ''
+            alpha = ''
+            try:
+                parts = ds.split('_')
+                # ['d2', fam, 'n...', 'a...', 'gs...']
+                if len(parts) >= 5 and parts[0] == 'd2':
+                    fam = parts[1]
+                    N = parts[2][1:]
+                    alpha = parts[3][1:]
+            except Exception:
+                pass
+
+            method = r.get('method','')
+            variant = r.get('variant','')
+            t = r.get('t','')
+
+            key = (sweep, fam, N, alpha, t, method, variant)
+            rows_all[key].append(r)
+            if r.get('ok','0') == '1':
+                rows_ok[key].append(r)
+
+# helper: safe float
+
+def f64(x):
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+# parse phases_json
+
+def parse_phases(s):
+    if not s:
+        return {}
+    try:
+        return json.loads(s)
+    except Exception:
+        return {}
+
+# summarize list -> mean/median/cv
+
+def summarize(vals):
+    vals = [v for v in vals if v is not None]
+    if not vals:
+        return None, None, None, 0
+    mean = statistics.fmean(vals)
+    med = statistics.median(vals)
+    if len(vals) >= 2:
+        stdev = statistics.pstdev(vals)  # population stdev
+        cv = (stdev / mean) if mean != 0 else None
+    else:
+        cv = None
+    return mean, med, cv, len(vals)
+
+out_path = out_dir / 'summary_stats.csv'
+with out_path.open('w', newline='') as f:
+    fieldnames = [
+        'sweep','family','N','alpha','t','method','variant',
+        'ok_reps','total_reps','status',
+        'wall_ms_mean','wall_ms_median','wall_ms_cv',
+        # phases
+    ]
+    for k in PHASE_KEYS:
+        fieldnames += [f'{k}_mean', f'{k}_median', f'{k}_cv']
+
+    # derived throughput (based on run_sample_ms)
+    fieldnames += ['samples_per_sec_mean','samples_per_sec_median','samples_per_sec_cv',
+                   'ns_per_sample_mean','ns_per_sample_median','ns_per_sample_cv']
+
+    w = csv.DictWriter(f, fieldnames=fieldnames)
+    w.writeheader()
+
+    for key in sorted(rows_all.keys()):
+        sweep, fam, N, alpha, t, method, variant = key
+        ok_list = rows_ok.get(key, [])
+        all_list = rows_all.get(key, [])
+        ok_reps = len(ok_list)
+        total_reps = len(all_list)
+
+        status = 'OK' if ok_reps == total_reps and total_reps > 0 else ('NR/FAIL' if ok_reps == 0 else 'PARTIAL')
+
+        wall_vals = [f64(r.get('wall_ms','')) for r in ok_list]
+        wall_mean, wall_med, wall_cv, _ = summarize(wall_vals)
+
+        out_row = {
+            'sweep': sweep,
+            'family': fam,
+            'N': N,
+            'alpha': alpha,
+            't': t,
+            'method': method,
+            'variant': variant,
+            'ok_reps': ok_reps,
+            'total_reps': total_reps,
+            'status': status,
+            'wall_ms_mean': wall_mean,
+            'wall_ms_median': wall_med,
+            'wall_ms_cv': wall_cv,
+        }
+
+        # collect phase metrics
+        phase_vals = {k: [] for k in PHASE_KEYS}
+        run_sample_ms_vals = []
+        t_int = None
+        try:
+            t_int = int(float(t))
+        except Exception:
+            t_int = None
+
+        for r in ok_list:
+            ph = parse_phases(r.get('phases_json',''))
+            for k in PHASE_KEYS:
+                phase_vals[k].append(f64(ph.get(k,'')))
+            rs = f64(ph.get('run_sample_ms',''))
+            run_sample_ms_vals.append(rs)
+
+        for k in PHASE_KEYS:
+            m, md, cv, _ = summarize(phase_vals[k])
+            out_row[f'{k}_mean'] = m
+            out_row[f'{k}_median'] = md
+            out_row[f'{k}_cv'] = cv
+
+        # Throughput metrics based on run_sample_ms
+        if t_int is not None and t_int > 0:
+            sps = []
+            nsp = []
+            for rs in run_sample_ms_vals:
+                if rs is None or rs <= 0:
+                    continue
+                sps.append(1000.0 * t_int / rs)
+                nsp.append(1e6 * rs / t_int)
+            m, md, cv, _ = summarize(sps)
+            out_row['samples_per_sec_mean'] = m
+            out_row['samples_per_sec_median'] = md
+            out_row['samples_per_sec_cv'] = cv
+            m, md, cv, _ = summarize(nsp)
+            out_row['ns_per_sample_mean'] = m
+            out_row['ns_per_sample_median'] = md
+            out_row['ns_per_sample_cv'] = cv
+
+        w.writerow(out_row)
+
+# also write a compact NR/FAIL list (ok_reps==0)
+fail_path = out_dir / 'summary_not_ok.csv'
+with fail_path.open('w', newline='') as f:
+    w = csv.writer(f)
+    w.writerow(['sweep','family','N','alpha','t','method','variant','total_reps'])
+    for key in sorted(rows_all.keys()):
+        if len(rows_ok.get(key, [])) == 0:
+            sweep, fam, N, alpha, t, method, variant = key
+            w.writerow([sweep, fam, N, alpha, t, method, variant, len(rows_all[key])])
+
+print(f"[summary] wrote: {out_path}")
+print(f"[summary] wrote: {fail_path}")
+PY
+
+# ----------------------------
+# Write RUN_SUMMARY
+# ----------------------------
 
 {
-  echo "# EXP-2* synthetic runner output (SJS-favorable plan)"
+  echo "# EXP-2D runner output (align to 实验计划-2D.md)"
   echo "timestamp=$(date -Is)"
   echo "exp_tag=$EXP_TAG"
   echo "build_type=$BUILD_TYPE"
   echo "threads=$THREADS"
   echo "repeats=$REPEATS"
   echo "seed=$SEED"
-  echo "gen=$GEN"
+  echo "python=$PYTHON"
   echo "gen_seed=$GEN_SEED"
   echo "audit_pairs=$AUDIT_PAIRS"
   echo "audit_seed=$AUDIT_SEED"
   echo "rectgen_base_script=$RECTGEN_BASE_SCRIPT"
   echo "alacarte_module=$ALACARTE_MODULE"
-  echo "rectgen_f0=$RECTGEN_F0"
-  echo "rectgen_f1=$RECTGEN_F1"
   echo "F0=$F0_VOLUME_DIST,$F0_VOLUME_CV,$F0_SHAPE_SIGMA"
   echo "F1=$F1_VOLUME_DIST,$F1_VOLUME_CV,$F1_SHAPE_SIGMA"
-  echo "B_TH=$B_TH"
-  echo "W_SMALL_TH=$W_SMALL_TH"
   echo "enum_cap=$ENUM_CAP"
+  echo "enum_precheck=$ENUM_PRECHECK"
   echo "run_signature=$RUN_SIGNATURE"
   echo "run_log_file=$RUN_LOG_FILE"
   echo "result_copy_datasets=$RESULT_COPY_DATASETS"
   echo "prune_temp_datasets=$PRUNE_TEMP_DATASETS"
   echo
-  echo "RUN_A=$RUN_A (ALPHAS_A=$ALPHAS_A N_A=$N_A T_A=$T_A)"
+  echo "RUN_A=$RUN_A (ALPHAS_A=$ALPHAS_A N_A=$N_A T_A=$T_A INCLUDE_ALPHA_CTRL=$INCLUDE_ALPHA_CTRL)"
   echo "RUN_B=$RUN_B (NS_B=$NS_B ALPHA_B=$ALPHA_B T_B=$T_B INCLUDE_B_F1=$INCLUDE_B_F1)"
   echo "RUN_C=$RUN_C (TS_C=$TS_C N_C=$N_C ALPHA_C=$ALPHA_C INCLUDE_C_F1=$INCLUDE_C_F1)"
   echo "RUN_D=$RUN_D (N_D=$N_D ALPHA_D=$ALPHA_D T_D=$T_D)"
-  echo "RUN_E=$RUN_E (TS_E=$TS_E BUDGETS_E=$BUDGETS_E W_SMALLS_E=$W_SMALLS_E)"
-  echo "RUN_F=$RUN_F (ALPHAS_F=$ALPHAS_F N_F=$N_F T_F=$T_F)"
+  echo "RUN_D_SHAPE_SWEEP=$RUN_D_SHAPE_SWEEP (D_SHAPE_SIGMAS=$D_SHAPE_SIGMAS)"
   echo
-  echo "Parallelism: max=$MAX_PARALLEL (A=$PAR_A, B_small=$PAR_B_SMALL, B_large=$PAR_B_LARGE, C_small=$PAR_C_SMALL, C_large=$PAR_C_LARGE, D=$PAR_D, E=$PAR_E, F=$PAR_F)"
-  echo "Failures=$FAIL_N"
+  echo "Parallelism: max=$MAX_PARALLEL (A=$PAR_A, B_small=$PAR_B_SMALL, B_large=$PAR_B_LARGE, C_small=$PAR_C_SMALL, C_large=$PAR_C_LARGE, D=$PAR_D)"
+  echo "Not runnable tasks (NR)=$NR_N"
+  echo "Failed tasks (FAIL)=$FAIL_N"
   echo
   echo "Outputs (temp workspace):"
   echo "  - Root run log    : $RUN_LOG_FILE"
   echo "  - Per-task logs   : $LOG_ROOT/<task_id>.log"
   echo "  - Per-task CSV    : $OUT_ROOT/<sweep>/<task_id>/run.csv"
   echo "  - Merged CSVs     : $MERGED_DIR/*_merged.csv"
+  echo "  - Summary stats   : $SUMMARY_DIR/summary_stats.csv"
+  echo "  - NR list         : $GLOBAL_NR"
   echo "  - Failures list   : $GLOBAL_FAIL"
   echo "  - Dataset logs    : $DATA_LOG_ROOT/*.log"
-  if [[ "$RESULT_COPY_DATASETS" == "1" ]]; then
-    echo "  - Dataset binaries: $DATA_ROOT/<F0|F1>/*.bin, *_gen_report.json"
-  else
-    echo "  - Dataset binaries: [not copied to results by default]"
-  fi
 } > "$MANIFEST_DIR/RUN_SUMMARY.txt"
 
 TMP_DATASET_SIZE="$(dir_size_human "$DATA_ROOT")"
@@ -1346,11 +1767,12 @@ RESULT_SIZE="$(dir_size_human "$RESULT_ROOT")"
 log "Synced curated results to: $RESULT_ROOT"
 log "Space usage: temp datasets=$TMP_DATASET_SIZE, temp out=$TMP_OUT_SIZE, temp task_logs=$TMP_TASK_LOG_SIZE, temp dataset_logs=$TMP_DATASET_LOG_SIZE, result_total=$RESULT_SIZE"
 log "Merged CSVs under: $RESULT_ROOT/manifest/merged/"
-log "Root run log: $RUN_LOG_FILE"
+log "Summary under    : $RESULT_ROOT/manifest/summary/"
+log "Root run log     : $RUN_LOG_FILE"
 
 if (( FAIL_N > 0 )); then
   warn "There are still $FAIL_N failed tasks after retries. See: $RESULT_ROOT/manifest/FAILURES.tsv"
   exit 1
 fi
 
-log "All tasks completed successfully." 
+log "All tasks completed (OK + NR)."

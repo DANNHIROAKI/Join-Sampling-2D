@@ -1,0 +1,3 @@
+# task_id	sweep	family	N	alpha	t	method	variant
+B_N__F0__n2000000__a100__t10000000__ours__enum_sampling	B_N	F0	2000000	100	10000000	ours	enum_sampling
+B_N__F0__n5000000__a100__t10000000__ours__enum_sampling	B_N	F0	5000000	100	10000000	ours	enum_sampling

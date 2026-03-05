@@ -1,0 +1,11 @@
+[2026-03-05T09:49:02+00:00][run.sh][task] start task_id=B_N__F0__n5000000__a100__t10000000__ours__sampling sweep=B_N family=F0 N=5000000 alpha=100 t=10000000 method=ours variant=sampling attempt=0
+[2026-03-05T09:49:02+00:00][run.sh][task] cmd=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n5000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n5000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n5000000_a100_gs1_S.bin --method=ours --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n5000000__a100__t10000000__ours__sampling --results_file=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n5000000__a100__t10000000__ours__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-05 09:49:02.788 [INFO] Loaded dataset: d2_F0_n5000000_a100_gs1 R= 5000000 S= 5000000
+2026-03-05 09:49:02.788 [INFO] Baseline: ours_sampling method= ours variant= sampling
+2026-03-05 09:49:36.484 [INFO] Run ok (rep= 0 ) wall_ms= 33695.9 count= 1.00316e+09 (exact) samples= 10000000
+2026-03-05 09:50:12.854 [INFO] Run ok (rep= 1 ) wall_ms= 36367.4 count= 1.00316e+09 (exact) samples= 10000000
+2026-03-05 09:50:49.476 [INFO] Run ok (rep= 2 ) wall_ms= 36622 count= 1.00316e+09 (exact) samples= 10000000
+2026-03-05 09:50:49.476 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":35561.8,"stdev":1620.86,"sem":935.804,"min":33695.9,"max":36622,"median":36367.4,"p90":36571,"p95":36596.5,"p99":36616.9}
+2026-03-05 09:50:49.476 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":35561.8,"stdev":1620.86,"sem":935.804,"min":33695.9,"max":36622,"median":36367.4,"p90":36571,"p95":36596.5,"p99":36616.9} ok_rate= 1
+2026-03-05 09:50:49.476 [INFO] Wrote results to: /home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/out/B_N/B_N__F0__n5000000__a100__t10000000__ours__sampling/run.csv
+[2026-03-05T09:50:54+00:00][run.sh][task] end task_id=B_N__F0__n5000000__a100__t10000000__ours__sampling rc=0

@@ -1,0 +1,9 @@
+run_signature=2354249153-872
+family=F0
+N=1000000
+alpha=130
+gen_seed=1
+rectgen_script=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/run/temp/exp2_plan_2d/rectgen_presets/alacarte_rectgen_F0.py
+alacarte_module=/home/dhy/PhD/Compare-305/2026.3.5-Pro-3/third_party/Alacarte/alacarte_rectgen.py
+audit_pairs=2000000
+audit_seed=1

@@ -1,0 +1,16 @@
+run_signature=2128948472-860
+attempt=0
+task_id=C_t__F0__n1000000__a100__t100000000__ours__enum_sampling
+sweep=C_t
+family=F0
+dataset=d2_F0_n1000000_a100_gs1
+N=1000000
+alpha=100
+t=100000000
+method=ours
+variant=enum_sampling
+enum_cap=300000000
+path_r=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin
+path_s=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin
+gen_report=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_gen_report.json
+cmd=/home/dhy/PhD/Compare/2026.3.5-Pro/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=ours --variant=enum_sampling --t=100000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t100000000__ours__enum_sampling --results_file=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/out/C_t/C_t__F0__n1000000__a100__t100000000__ours__enum_sampling/run.csv --log_level=info --log_timestamp=1

@@ -1,0 +1,119 @@
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Run log initialized: /home/dhy/PhD/Compare/2026.3.5-Pro/log/run_exp2_plan_2d_20260305_054117_pid2217809.log
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Repo root  : /home/dhy/PhD/Compare/2026.3.5-Pro
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Build type : Release
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Build dir  : /home/dhy/PhD/Compare/2026.3.5-Pro/build/release
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Temp dir   : /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Results dir: /home/dhy/PhD/Compare/2026.3.5-Pro/results/raw/exp2_plan_2d
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Configuring CMake...
+-- The CXX compiler identification is GNU 9.4.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/dhy/PhD/Compare/2026.3.5-Pro/build/release
+[2026-03-05T05:41:17+00:00][run.sh][INFO] Building... (JOBS=16)
+[  2%] Building CXX object src/CMakeFiles/sjs.dir/baselines/baseline_names.cpp.o
+[  5%] Building CXX object src/CMakeFiles/sjs.dir/baselines/baseline_factory_2d.cpp.o
+[  7%] Building CXX object src/CMakeFiles/sjs.dir/baselines/ours/enum_sampling.cpp.o
+[ 12%] Building CXX object src/CMakeFiles/sjs.dir/io/load_dataset_2d.cpp.o
+[ 12%] Building CXX object src/CMakeFiles/sjs.dir/baselines/runners/instantiations_2d.cpp.o
+[ 15%] Building CXX object src/CMakeFiles/sjs.dir/data/instantiations_2d.cpp.o
+[ 17%] Building CXX object src/CMakeFiles/sjs.dir/baselines/ours/sampling.cpp.o
+[ 23%] Building CXX object src/CMakeFiles/sjs.dir/core/instantiations_2d.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/sjs.dir/data/synthetic/instantiations_2d.cpp.o
+[ 25%] Building CXX object src/CMakeFiles/sjs.dir/data/synthetic/generator_factory_2d.cpp.o
+[ 28%] Building CXX object src/CMakeFiles/sjs.dir/io/realdata_stub.cpp.o
+[ 30%] Building CXX object src/CMakeFiles/sjs.dir/geometry/instantiations_2d.cpp.o
+[ 35%] Building CXX object src/CMakeFiles/sjs.dir/join/build_events_2d.cpp.o
+[ 35%] Building CXX object src/CMakeFiles/sjs.dir/io/write_results.cpp.o
+[ 38%] Building CXX object src/CMakeFiles/sjs.dir/join/oracle_2d.cpp.o
+[ 41%] Building CXX object src/CMakeFiles/sjs.dir/join/instantiations_2d.cpp.o
+[ 43%] Building CXX object src/CMakeFiles/sjs.dir/sampling/instantiations_2d.cpp.o
+[ 46%] Building CXX object src/CMakeFiles/sjs.dir/sampling/quality_checks.cpp.o
+[ 48%] Linking CXX static library libsjs.a
+[ 48%] Built target sjs
+[ 51%] Building CXX object CMakeFiles/sjs_run.dir/apps/sjs_run.cpp.o
+[ 56%] Building CXX object CMakeFiles/sjs_gen_dataset.dir/apps/sjs_gen_dataset.cpp.o
+[ 56%] Building CXX object tests/CMakeFiles/sjs_test_join_oracle.dir/test_join_oracle.cpp.o
+[ 58%] Building CXX object CMakeFiles/sjs_sweep.dir/apps/sjs_sweep.cpp.o
+[ 61%] Building CXX object CMakeFiles/sjs_verify.dir/apps/sjs_verify.cpp.o
+[ 66%] Building CXX object tests/CMakeFiles/sjs_test_event_sweep.dir/test_event_sweep.cpp.o
+[ 66%] Building CXX object tests/CMakeFiles/sjs_test_geometry.dir/test_geometry.cpp.o
+[ 69%] Building CXX object tests/CMakeFiles/sjs_test_sampling_quality.dir/test_sampling_quality.cpp.o
+[ 71%] Building CXX object tests/CMakeFiles/sjs_test_write_results.dir/test_write_results.cpp.o
+[ 74%] Building CXX object tests/CMakeFiles/sjs_test_baselines_smoke.dir/test_baselines_smoke.cpp.o
+[ 76%] Linking CXX executable sjs_test_geometry
+[ 76%] Built target sjs_test_geometry
+[ 79%] Linking CXX executable sjs_test_event_sweep
+[ 82%] Linking CXX executable sjs_test_write_results
+[ 84%] Linking CXX executable sjs_test_sampling_quality
+[ 84%] Built target sjs_test_event_sweep
+[ 84%] Built target sjs_test_write_results
+[ 84%] Built target sjs_test_sampling_quality
+[ 87%] Linking CXX executable sjs_test_join_oracle
+[ 87%] Built target sjs_test_join_oracle
+[ 89%] Linking CXX executable sjs_test_baselines_smoke
+[ 89%] Built target sjs_test_baselines_smoke
+[ 92%] Linking CXX executable sjs_gen_dataset
+[ 92%] Built target sjs_gen_dataset
+[ 94%] Linking CXX executable sjs_verify
+[ 94%] Built target sjs_verify
+[ 97%] Linking CXX executable sjs_run
+[ 97%] Built target sjs_run
+[100%] Linking CXX executable sjs_sweep
+[100%] Built target sjs_sweep
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Using sjs_run: /home/dhy/PhD/Compare/2026.3.5-Pro/build/release/sjs_run
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Host: nproc=128, mem~1008GB
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Parallelism: max=8 (A=8, B_small=2, B_large=1, C_small=3, C_large=1, D=8)
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Enum: cap=300000000, precheck=1
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Run signature: 2128948472-860
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Rectgen presets under: /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/rectgen_presets
+[2026-03-05T05:41:24+00:00][run.sh][INFO]   F0 => /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/rectgen_presets/alacarte_rectgen_F0.py
+[2026-03-05T05:41:24+00:00][run.sh][INFO]   F1 => /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/rectgen_presets/alacarte_rectgen_F1.py
+[2026-03-05T05:41:24+00:00][run.sh][INFO] Generating task manifests...
+[2026-03-05T05:41:25+00:00][run.sh][INFO] Task counts: A=42, B_small=12, B_large=6, C_small=18, C_large=3, D=6, D_shape=0 (total=87)
+[2026-03-05T05:41:25+00:00][run.sh][INFO] Pre-generating datasets (unique count=19)...
+[2026-03-05T05:41:25+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a70_gs1 (fam=F0 N=1000000 alpha=70)
+[2026-03-05T05:41:25+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a70_gs1 (fam=F1 N=1000000 alpha=70)
+[2026-03-05T05:41:26+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a80_gs1 (fam=F0 N=1000000 alpha=80)
+[2026-03-05T05:41:27+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a80_gs1 (fam=F1 N=1000000 alpha=80)
+[2026-03-05T05:41:28+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a90_gs1 (fam=F0 N=1000000 alpha=90)
+[2026-03-05T05:41:28+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a90_gs1 (fam=F1 N=1000000 alpha=90)
+[2026-03-05T05:41:29+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a100_gs1 (fam=F0 N=1000000 alpha=100)
+[2026-03-05T05:41:30+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a100_gs1 (fam=F1 N=1000000 alpha=100)
+[2026-03-05T05:41:31+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a110_gs1 (fam=F0 N=1000000 alpha=110)
+[2026-03-05T05:41:32+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a110_gs1 (fam=F1 N=1000000 alpha=110)
+[2026-03-05T05:41:33+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a120_gs1 (fam=F0 N=1000000 alpha=120)
+[2026-03-05T05:41:33+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a120_gs1 (fam=F1 N=1000000 alpha=120)
+[2026-03-05T05:41:34+00:00][run.sh][INFO] [dataset] Generating d2_F0_n1000000_a130_gs1 (fam=F0 N=1000000 alpha=130)
+[2026-03-05T05:41:35+00:00][run.sh][INFO] [dataset] Generating d2_F1_n1000000_a130_gs1 (fam=F1 N=1000000 alpha=130)
+[2026-03-05T05:41:36+00:00][run.sh][INFO] [dataset] Generating d2_F0_n100000_a100_gs1 (fam=F0 N=100000 alpha=100)
+[2026-03-05T05:41:36+00:00][run.sh][INFO] [dataset] Generating d2_F0_n200000_a100_gs1 (fam=F0 N=200000 alpha=100)
+[2026-03-05T05:41:37+00:00][run.sh][INFO] [dataset] Generating d2_F0_n500000_a100_gs1 (fam=F0 N=500000 alpha=100)
+[2026-03-05T05:41:37+00:00][run.sh][INFO] [dataset] Generating d2_F0_n2000000_a100_gs1 (fam=F0 N=2000000 alpha=100)
+[2026-03-05T05:41:38+00:00][run.sh][INFO] [dataset] Generating d2_F0_n5000000_a100_gs1 (fam=F0 N=5000000 alpha=100)
+[2026-03-05T05:41:39+00:00][run.sh][INFO] All datasets are ready.
+[2026-03-05T05:41:39+00:00][run.sh][INFO] Running tasks: tasks_A_alpha.tsv (attempt=0, parallel=8, force=0)
+[2026-03-05T05:47:30+00:00][run.sh][INFO] A_alpha: all tasks done (OK or NR)
+[2026-03-05T05:47:30+00:00][run.sh][INFO] Running tasks: tasks_B_N_small.tsv (attempt=0, parallel=2, force=0)
+[2026-03-05T05:49:18+00:00][run.sh][INFO] B_N_small: all tasks done (OK or NR)
+[2026-03-05T05:49:18+00:00][run.sh][INFO] Running tasks: tasks_B_N_large.tsv (attempt=0, parallel=1, force=0)
+[2026-03-05T05:58:27+00:00][run.sh][INFO] B_N_large: all tasks done (OK or NR)
+[2026-03-05T05:58:27+00:00][run.sh][INFO] Running tasks: tasks_C_t_small.tsv (attempt=0, parallel=3, force=0)
+[2026-03-05T06:02:15+00:00][run.sh][INFO] C_t_small: all tasks done (OK or NR)
+[2026-03-05T06:02:15+00:00][run.sh][INFO] Running tasks: tasks_C_t_large.tsv (attempt=0, parallel=1, force=0)
+[2026-03-05T06:05:03+00:00][run.sh][INFO] C_t_large: all tasks done (OK or NR)
+[2026-03-05T06:05:03+00:00][run.sh][INFO] Running tasks: tasks_D_family.tsv (attempt=0, parallel=8, force=0)
+[2026-03-05T06:07:07+00:00][run.sh][INFO] D_family: all tasks done (OK or NR)
+[summary] wrote: /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/manifest/summary/summary_stats.csv
+[summary] wrote: /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/manifest/summary/summary_not_ok.csv

@@ -1,0 +1,11 @@
+[2026-03-05T05:44:16+00:00][run.sh][task] start task_id=A_alpha__F0__n1000000__a120__t10000000__kd_tree__sampling sweep=A_alpha family=F0 N=1000000 alpha=120 t=10000000 method=kd_tree variant=sampling attempt=0
+[2026-03-05T05:44:16+00:00][run.sh][task] cmd=/home/dhy/PhD/Compare/2026.3.5-Pro/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a120_gs1 --dim=2 --path_r=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a120_gs1_R.bin --path_s=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/datasets/F0/d2_F0_n1000000_a120_gs1_S.bin --method=kd_tree --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=300000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a120__t10000000__kd_tree__sampling --results_file=/home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a120__t10000000__kd_tree__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-05 05:44:16.984 [INFO] Loaded dataset: d2_F0_n1000000_a120_gs1 R= 1000000 S= 1000000
+2026-03-05 05:44:16.984 [INFO] Baseline: kd_tree_sampling method= kd_tree variant= sampling
+2026-03-05 05:44:33.997 [INFO] Run ok (rep= 0 ) wall_ms= 17012.5 count= 2.41881e+08 (exact) samples= 10000000
+2026-03-05 05:44:50.231 [INFO] Run ok (rep= 1 ) wall_ms= 16228.8 count= 2.41881e+08 (exact) samples= 10000000
+2026-03-05 05:45:06.360 [INFO] Run ok (rep= 2 ) wall_ms= 16126.2 count= 2.41881e+08 (exact) samples= 10000000
+2026-03-05 05:45:06.363 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":16455.8,"stdev":484.766,"sem":279.88,"min":16126.2,"max":17012.5,"median":16228.8,"p90":16855.7,"p95":16934.1,"p99":16996.8}
+2026-03-05 05:45:06.363 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":16455.8,"stdev":484.766,"sem":279.88,"min":16126.2,"max":17012.5,"median":16228.8,"p90":16855.7,"p95":16934.1,"p99":16996.8} ok_rate= 1
+2026-03-05 05:45:06.363 [INFO] Wrote results to: /home/dhy/PhD/Compare/2026.3.5-Pro/run/temp/exp2_plan_2d/out/A_alpha/A_alpha__F0__n1000000__a120__t10000000__kd_tree__sampling/run.csv
+[2026-03-05T05:45:06+00:00][run.sh][task] end task_id=A_alpha__F0__n1000000__a120__t10000000__kd_tree__sampling rc=0

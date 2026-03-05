@@ -1,16 +1,33 @@
 #!/usr/bin/env bash
 # run.sh (repo root)
 #
-# 实验计划（2D）一键复现实验脚本
-# --------------------------------
-# 对齐：《实验计划-2D.md》中的四组主实验 A*~D*（以及 D* 的可选 shape_sigma 扩展）。
+# 实验计划（2D, Throughput/TH 配置）一键复现实验脚本
+# ----------------------------------------------------
+# 对齐：《实验计划.md》中的四组主实验 A*~D*。
+#
+# 本版本用于“更大参数网络”的 TH（throughput）评估：
+#   - 重点把 t 提升到 1e7~1e9 区间（SJS 主战场），并扫描 alpha_out / N / family。
 #
 # 主实验：
-#   (A*) alpha_out 扫描 @ N=1e6, t=1e7, families F0+F1
-#   (B*) N 扫描        @ alpha=100, t=1e7, family F0（F1 可选）
-#   (C*) t 扫描        @ N=1e6, alpha=100, family F0（F1 可选）
-#   (D*) family 敏感性 @ N=1e6, alpha=100, t=1e7, families F0+F1
-#       可选扩展：lognormal + volume_cv=1.0 固定，shape_sigma 扫描
+#   (A*) alpha_out 扫描（密度敏感性, TH）
+#        N=1e6, t=1e7, d=2, alpha_out in {0.1,0.3,1,3,10,30,100,300,1000}
+#        families: F0 + F1
+#
+#   (B*) N 扫描（输入规模可扩展性, TH）
+#        alpha_out=100, t=1e7, d=2
+#        N in {1e5,2e5,5e5,1e6,2e6,5e6}
+#        family: F0（F1 可选：INCLUDE_B_F1=1）
+#
+#   (C*) t 扫描（输出规模可扩展性, TH）
+#        N=1e6, alpha_out=100, d=2
+#        t in {1e6,3e6,1e7,3e7,1e8,3e8,1e9}
+#        family: F0（F1 可选：INCLUDE_C_F1=1）
+#        额外汇报：samples/sec 与 ns/sample（基于 run_sample_ms）
+#
+#   (D*) family 敏感性（形状/尺度方差）
+#        N=1e6, alpha_out=100, t=1e7, d=2
+#        F0: fixed + shape_sigma=0.0
+#        F1: lognormal(cv=1.0) + shape_sigma=1.0
 #
 # 模型：
 #   1) KDTree          : --method=kd_tree --variant=sampling
@@ -37,14 +54,16 @@
 #   AUDIT_SEED=1
 #
 #   # EnumSampling 安全阈值（0 表示不设 cap；注意可能 OOM）
-#   ENUM_CAP=300000000
+#   # 说明：B* 包含 N=5e6, alpha=100，期望 |J|≈1e9，若希望 enum_sampling 可运行，
+#   #      需把 ENUM_CAP 提到 >= 1e9（并确保机器内存足够）。
+#   ENUM_CAP=1200000000
 #   ENUM_PRECHECK=1    # 1: 若预计 |J| > ENUM_CAP，直接标记 Not runnable 而不实际枚举
 #
 #   # 子集开关
 #   RUN_A=1 RUN_B=1 RUN_C=1 RUN_D=1
 #   INCLUDE_B_F1=0
 #   INCLUDE_C_F1=0
-#   INCLUDE_ALPHA_CTRL=0   # 1: A* 额外加入 {50,150,200}
+#   INCLUDE_ALPHA_CTRL=0   # 1: A* 额外加入 ALPHAS_A_CTRL（默认空）
 #   RUN_D_SHAPE_SWEEP=0    # 1: 跑 D* 的 shape_sigma 扩展
 #
 #   # 并行/健壮性
@@ -56,6 +75,10 @@
 #   RUN_LOG_TO_STDOUT=0
 #   RESULT_COPY_DATASETS=0
 #   PRUNE_TEMP_DATASETS=1
+
+#   # TH 配置（throughput profile）
+#   WRITE_SAMPLES=0
+#   VERIFY=0
 #
 # 说明：
 #   - 数据集生成采用 python 脚本 tools/alacarte_rectgen_generate.py（复制为 preset，不改源码），
@@ -260,9 +283,9 @@ dir_size_human() {
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ----------------------------
-# Parameters (defaults align to 实验计划-2D.md)
+# Parameters (defaults align to 实验计划.md)
 # ----------------------------
-EXP_TAG="${EXP_TAG:-exp2_plan_2d}"
+EXP_TAG="${EXP_TAG:-exp3_th_biggrid_2d}"
 
 BUILD_TYPE="${BUILD_TYPE:-Release}"
 CLEAN_BUILD="${CLEAN_BUILD:-0}"
@@ -272,13 +295,17 @@ THREADS="${THREADS:-1}"
 REPEATS="${REPEATS:-3}"
 SEED="${SEED:-1}"
 
+# TH profile toggles
+WRITE_SAMPLES="${WRITE_SAMPLES:-0}"
+VERIFY="${VERIFY:-0}"
+
 PYTHON="${PYTHON:-python3}"
 GEN_SEED="${GEN_SEED:-1}"
 AUDIT_PAIRS="${AUDIT_PAIRS:-2000000}"
 AUDIT_SEED="${AUDIT_SEED:-$GEN_SEED}"
 
 # EnumSampling safety
-ENUM_CAP="${ENUM_CAP:-300000000}"
+ENUM_CAP="${ENUM_CAP:-1200000000}"
 ENUM_PRECHECK="${ENUM_PRECHECK:-1}"
 
 # Which sweeps to run
@@ -293,8 +320,8 @@ INCLUDE_ALPHA_CTRL="${INCLUDE_ALPHA_CTRL:-0}"
 RUN_D_SHAPE_SWEEP="${RUN_D_SHAPE_SWEEP:-0}"
 
 # Grids
-ALPHAS_A_BASE="${ALPHAS_A_BASE:-70 80 90 100 110 120 130}"
-ALPHAS_A_CTRL="${ALPHAS_A_CTRL:-50 150 200}"
+ALPHAS_A_BASE="${ALPHAS_A_BASE:-0.1 0.3 1 3 10 30 100 300 1000}"
+ALPHAS_A_CTRL="${ALPHAS_A_CTRL:-}"
 N_A="${N_A:-1000000}"
 T_A="${T_A:-10000000}"
 
@@ -302,7 +329,7 @@ NS_B="${NS_B:-100000 200000 500000 1000000 2000000 5000000}"
 ALPHA_B="${ALPHA_B:-100}"
 T_B="${T_B:-10000000}"
 
-TS_C="${TS_C:-100000 300000 1000000 3000000 10000000 30000000 100000000}"
+TS_C="${TS_C:-1000000 3000000 10000000 30000000 100000000 300000000 1000000000}"
 N_C="${N_C:-1000000}"
 ALPHA_C="${ALPHA_C:-100}"
 
@@ -1037,8 +1064,8 @@ run_one_task() {
     "--repeats=$REPEATS"
     "--threads=$THREADS"
     "--enum_cap=$ENUM_CAP"
-    "--write_samples=0"
-    "--verify=0"
+    "--write_samples=$WRITE_SAMPLES"
+    "--verify=$VERIFY"
     "--out_dir=$out_dir"
     "--results_file=$csv_file"
     "--log_level=info"
@@ -1691,13 +1718,15 @@ PY
 # ----------------------------
 
 {
-  echo "# EXP-2D runner output (align to 实验计划-2D.md)"
+  echo "# EXP-2D runner output (align to 实验计划.md; TH/throughput profile)"
   echo "timestamp=$(date -Is)"
   echo "exp_tag=$EXP_TAG"
   echo "build_type=$BUILD_TYPE"
   echo "threads=$THREADS"
   echo "repeats=$REPEATS"
   echo "seed=$SEED"
+  echo "write_samples=$WRITE_SAMPLES"
+  echo "verify=$VERIFY"
   echo "python=$PYTHON"
   echo "gen_seed=$GEN_SEED"
   echo "audit_pairs=$AUDIT_PAIRS"

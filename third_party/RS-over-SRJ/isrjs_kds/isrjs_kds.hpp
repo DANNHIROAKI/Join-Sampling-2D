@@ -50,7 +50,7 @@
 //   0 (default): batch samples by the chosen R index (faster, same distribution)
 //   1:           do not batch; run one KD-tree query per output sample
 #ifndef RS_OVER_SRJ_DISABLE_BATCHING
-#define RS_OVER_SRJ_DISABLE_BATCHING 0
+#define RS_OVER_SRJ_DISABLE_BATCHING 1
 #endif
 
 // Enable expensive runtime validation of sampled pairs (debug only).

@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/dhy/PhD/results/build/release/cmake_install.cmake",
+		"/home/dhy/PhD/results/build/release/src/cmake_install.cmake",
+		"/home/dhy/PhD/results/build/release/tests/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

@@ -1,0 +1,11 @@
+[2026-03-08T11:05:05+00:00][run.sh][task] start task_id=B_N__F0__n1000000__a100__t10000000__ours__sampling sweep=B_N family=F0 N=1000000 alpha=100 t=10000000 method=ours variant=sampling attempt=0
+[2026-03-08T11:05:05+00:00][run.sh][task] cmd=/home/dhy/PhD/results/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a100_gs1 --dim=2 --path_r=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F0/d2_F0_n1000000_a100_gs1_R.bin --path_s=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F0/d2_F0_n1000000_a100_gs1_S.bin --method=ours --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=1200000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/B_N/B_N__F0__n1000000__a100__t10000000__ours__sampling --results_file=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/B_N/B_N__F0__n1000000__a100__t10000000__ours__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-08 11:05:05.192 [INFO] Loaded dataset: d2_F0_n1000000_a100_gs1 R= 1000000 S= 1000000
+2026-03-08 11:05:05.192 [INFO] Baseline: ours_sampling method= ours variant= sampling
+2026-03-08 11:05:12.195 [INFO] Run ok (rep= 0 ) wall_ms= 7003.72 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-08 11:05:19.291 [INFO] Run ok (rep= 1 ) wall_ms= 7095.59 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-08 11:05:26.164 [INFO] Run ok (rep= 2 ) wall_ms= 6872.65 count= 2.01434e+08 (exact) samples= 10000000
+2026-03-08 11:05:26.164 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":6990.65,"stdev":112.044,"sem":64.6887,"min":6872.65,"max":7095.59,"median":7003.72,"p90":7077.22,"p95":7086.4,"p99":7093.75}
+2026-03-08 11:05:26.164 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":6990.65,"stdev":112.044,"sem":64.6887,"min":6872.65,"max":7095.59,"median":7003.72,"p90":7077.22,"p95":7086.4,"p99":7093.75} ok_rate= 1
+2026-03-08 11:05:26.164 [INFO] Wrote results to: /home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/B_N/B_N__F0__n1000000__a100__t10000000__ours__sampling/run.csv
+[2026-03-08T11:05:27+00:00][run.sh][task] end task_id=B_N__F0__n1000000__a100__t10000000__ours__sampling rc=0

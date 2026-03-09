@@ -1,0 +1,11 @@
+[2026-03-08T10:53:23+00:00][run.sh][task] start task_id=A_alpha__F0__n1000000__a30__t10000000__ours__enum_sampling sweep=A_alpha family=F0 N=1000000 alpha=30 t=10000000 method=ours variant=enum_sampling attempt=0
+[2026-03-08T10:53:23+00:00][run.sh][task] cmd=/home/dhy/PhD/results/build/release/sjs_run --dataset_source=binary --dataset=d2_F0_n1000000_a30_gs1 --dim=2 --path_r=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F0/d2_F0_n1000000_a30_gs1_R.bin --path_s=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F0/d2_F0_n1000000_a30_gs1_S.bin --method=ours --variant=enum_sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=1200000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F0__n1000000__a30__t10000000__ours__enum_sampling --results_file=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F0__n1000000__a30__t10000000__ours__enum_sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-08 10:53:23.875 [INFO] Loaded dataset: d2_F0_n1000000_a30_gs1 R= 1000000 S= 1000000
+2026-03-08 10:53:23.875 [INFO] Baseline: ours_enum+sampling method= ours variant= enum_sampling
+2026-03-08 10:53:29.989 [INFO] Run ok (rep= 0 ) wall_ms= 6113.51 count= 6.02392e+07 (exact) samples= 10000000
+2026-03-08 10:53:36.394 [INFO] Run ok (rep= 1 ) wall_ms= 6400.92 count= 6.02392e+07 (exact) samples= 10000000
+2026-03-08 10:53:42.741 [INFO] Run ok (rep= 2 ) wall_ms= 6345.23 count= 6.02392e+07 (exact) samples= 10000000
+2026-03-08 10:53:42.744 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":6286.55,"stdev":152.426,"sem":88.0032,"min":6113.51,"max":6400.92,"median":6345.23,"p90":6389.78,"p95":6395.35,"p99":6399.81}
+2026-03-08 10:53:42.744 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":6286.55,"stdev":152.426,"sem":88.0032,"min":6113.51,"max":6400.92,"median":6345.23,"p90":6389.78,"p95":6395.35,"p99":6399.81} ok_rate= 1
+2026-03-08 10:53:42.744 [INFO] Wrote results to: /home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F0__n1000000__a30__t10000000__ours__enum_sampling/run.csv
+[2026-03-08T10:53:43+00:00][run.sh][task] end task_id=A_alpha__F0__n1000000__a30__t10000000__ours__enum_sampling rc=0

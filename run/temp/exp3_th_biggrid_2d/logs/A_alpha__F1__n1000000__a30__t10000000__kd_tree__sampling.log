@@ -1,0 +1,11 @@
+[2026-03-08T10:53:38+00:00][run.sh][task] start task_id=A_alpha__F1__n1000000__a30__t10000000__kd_tree__sampling sweep=A_alpha family=F1 N=1000000 alpha=30 t=10000000 method=kd_tree variant=sampling attempt=0
+[2026-03-08T10:53:38+00:00][run.sh][task] cmd=/home/dhy/PhD/results/build/release/sjs_run --dataset_source=binary --dataset=d2_F1_n1000000_a30_gs1 --dim=2 --path_r=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F1/d2_F1_n1000000_a30_gs1_R.bin --path_s=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/datasets/F1/d2_F1_n1000000_a30_gs1_S.bin --method=kd_tree --variant=sampling --t=10000000 --seed=1 --repeats=3 --threads=1 --enum_cap=1200000000 --write_samples=0 --verify=0 --out_dir=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F1__n1000000__a30__t10000000__kd_tree__sampling --results_file=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F1__n1000000__a30__t10000000__kd_tree__sampling/run.csv --log_level=info --log_timestamp=1
+2026-03-08 10:53:38.448 [INFO] Loaded dataset: d2_F1_n1000000_a30_gs1 R= 1000000 S= 1000000
+2026-03-08 10:53:38.448 [INFO] Baseline: kd_tree_sampling method= kd_tree variant= sampling
+2026-03-08 10:53:58.342 [INFO] Run ok (rep= 0 ) wall_ms= 19893.4 count= 5.99117e+07 (exact) samples= 10000000
+2026-03-08 10:54:17.730 [INFO] Run ok (rep= 1 ) wall_ms= 19386.1 count= 5.99117e+07 (exact) samples= 10000000
+2026-03-08 10:54:37.030 [INFO] Run ok (rep= 2 ) wall_ms= 19297.7 count= 5.99117e+07 (exact) samples= 10000000
+2026-03-08 10:54:37.031 [INFO] Wall-time summary (ms) [all]: {"n":3,"mean":19525.8,"stdev":321.463,"sem":185.597,"min":19297.7,"max":19893.4,"median":19386.1,"p90":19792,"p95":19842.7,"p99":19883.3}
+2026-03-08 10:54:37.031 [INFO] Wall-time summary (ms) [ok-only]: {"n":3,"mean":19525.8,"stdev":321.463,"sem":185.597,"min":19297.7,"max":19893.4,"median":19386.1,"p90":19792,"p95":19842.7,"p99":19883.3} ok_rate= 1
+2026-03-08 10:54:37.031 [INFO] Wrote results to: /home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/out/A_alpha/A_alpha__F1__n1000000__a30__t10000000__kd_tree__sampling/run.csv
+[2026-03-08T10:54:37+00:00][run.sh][task] end task_id=A_alpha__F1__n1000000__a30__t10000000__kd_tree__sampling rc=0

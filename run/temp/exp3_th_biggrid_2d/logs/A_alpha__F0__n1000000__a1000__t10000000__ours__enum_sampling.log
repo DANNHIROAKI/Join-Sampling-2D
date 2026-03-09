@@ -1,0 +1,1 @@
+[2026-03-08T10:54:33+00:00][run.sh][task] NR(precheck) task_id=A_alpha__F0__n1000000__a1000__t10000000__ours__enum_sampling Not runnable: expected |J|≈2000000000 > enum_cap=1200000000 (precheck)

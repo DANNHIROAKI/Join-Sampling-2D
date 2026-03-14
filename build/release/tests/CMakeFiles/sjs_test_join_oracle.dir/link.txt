@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sjs_test_join_oracle.dir/test_join_oracle.cpp.o -o sjs_test_join_oracle  ../src/libsjs.a -lpthread

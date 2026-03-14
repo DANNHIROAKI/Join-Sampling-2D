@@ -1,3 +1,0 @@
-sweep,family,N,alpha,t,method,variant,total_reps
-A_alpha,F0,1000000,1000,10000000,ours,enum_sampling,3
-A_alpha,F1,1000000,1000,10000000,ours,enum_sampling,3

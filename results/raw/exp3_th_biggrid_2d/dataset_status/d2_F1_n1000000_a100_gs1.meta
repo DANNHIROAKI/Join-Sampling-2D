@@ -1,9 +1,0 @@
-run_signature=3974507463-844
-family=F1
-N=1000000
-alpha=100
-gen_seed=1
-rectgen_script=/home/dhy/PhD/results/run/temp/exp3_th_biggrid_2d/rectgen_presets/alacarte_rectgen_F1.py
-alacarte_module=/home/dhy/PhD/results/third_party/Alacarte/alacarte_rectgen.py
-audit_pairs=2000000
-audit_seed=1
